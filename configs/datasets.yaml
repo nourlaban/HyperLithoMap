@@ -1,0 +1,99 @@
+# Dataset registry for the hyperspectral classification pipeline.
+#
+# Each entry describes one scene + training shapefile. Add a new region or
+# sensor by adding an entry here — no code changes are needed as long as the
+# scene is in one of the supported formats:
+#
+#   prisma_he5 : PRISMA L2 HDF5 (.he5) — VNIR + SWIR cubes stacked, georeferenced
+#                from the lat/lon geolocation fields.
+#   envi       : ENVI binary (.dat/.img + .hdr sidecar), e.g. a PRISMA or any
+#                other sensor exported from ENVI.
+#   geotiff    : multi-band GeoTIFF, e.g. EnMAP L2A SPECTRAL_IMAGE.TIF.
+#
+# All paths are relative to the data root, which is resolved in this order:
+#   1. --data-root CLI option
+#   2. HSDL_DATA_ROOT environment variable
+#   3. `data_root` below (relative paths are taken from the repository root)
+
+data_root: data
+
+# Shared Egypt boundary used by the regional-map figure scripts.
+boundary_shapefile: aboresheadmamabadataPrisma/input/egy_boundaries/egy_boundaries.shp
+
+# Values applied to every dataset unless the dataset overrides them.
+defaults:
+  input_dir: input
+  intermediate_dir: intermediate
+  output_dir: output
+  class_field: Classcode        # column the rasterised class index is written to
+  class_name_field: Classname   # column holding the class names
+  num_mnf_bands: 10             # MNF components appended to the cube (0 disables)
+  clip_to_shapefile: true       # crop the cube to the shapefile extent before MNF
+  samples: 1000                 # max labelled pixels sampled per class
+  test_size: 0.70               # fraction of sampled pixels held out for testing
+  clr_file: null                # optional .clr colour table inside input_dir
+
+# PRISMA L2D HDF5 field layout, shared by the PRISMA .he5 datasets below.
+_prisma_l2d: &prisma_l2d
+  format: prisma_he5
+  sensor: PRISMA
+  h5_vnir_key: "HDFEOS/SWATHS/PRS_L2D_HCO/Data Fields/VNIR_Cube"
+  h5_swir_key: "HDFEOS/SWATHS/PRS_L2D_HCO/Data Fields/SWIR_Cube"
+  h5_lat_key: "HDFEOS/SWATHS/PRS_L2D_HCO/Geolocation Fields/Latitude"
+  h5_lon_key: "HDFEOS/SWATHS/PRS_L2D_HCO/Geolocation Fields/Longitude"
+  # 0-based band indices dropped from each cube (noisy / water-absorption bands)
+  vnir_bands_to_remove: [1, 2, 3, 4, 5]
+  swir_bands_to_remove: "range(3,6) + range(40,57) + range(86,112) + range(152,172)"
+
+datasets:
+  PRISMA:
+    <<: *prisma_l2d
+    description: Abu Rusheid (Aboresheed) — PRISMA L2D, 25 July 2020
+    region_label: Aboresheed
+    base_dir: aboresheadmamabadataPrisma
+    experiment: experiments_008
+    scene: PRS_L2D_STD_20200725083506_20200725083510_0001.he5
+    shapefile: PRISMA_18_2_2026/PRISMA_18_2_2026.shp
+    clr_file: geology_classes.clr
+
+  PRISMA_Gahelia:
+    <<: *prisma_l2d
+    description: Bir Gahelia — PRISMA L2D, 2 October 2020 (full scene)
+    region_label: Bir Gahelia
+    base_dir: Gahelia2026dataPrisma
+    experiment: experiments_002
+    scene: PRS_L2D_STD_20201002082501_20201002082505_0001.he5
+    shapefile: PRISMA_Gahelia_Train_with_names/PRISMA_Gahelia_Train_with_names.shp
+
+  PRISMA_Gahelia_Clipped:
+    <<: *prisma_l2d
+    description: Bir Gahelia — PRISMA L2D, 2 October 2020 (clipped training set)
+    region_label: Bir Gahelia
+    base_dir: Gahelia2026dataPrismaClipped
+    experiment: experiments_004
+    scene: PRS_L2D_STD_20201002082501_20201002082505_0001.he5
+    shapefile: Train300620226/PRISMA_Gahelia_Train.shp
+
+  EnMap:
+    format: geotiff
+    sensor: EnMAP
+    description: Abu Rusheid (Aboresheed) — EnMAP L2A, 29 August 2024
+    region_label: Aboresheed
+    base_dir: aboresheadmamabadataEnMap
+    experiment: experiments_006
+    scene: L2A-DT0000091569_20240829T090109Z_001_V010502_20250429T205814Z-SPECTRAL_IMAGE.TIF
+    shapefile: EnMap_18_2_2026/EnMap_18_2_2026.shp
+    bands_to_remove: "range(131,136)"
+
+  RabshiPRISMA:
+    format: envi
+    sensor: PRISMA
+    description: Rabshi — PRISMA scene exported as ENVI .dat
+    region_label: Rabshi
+    base_dir: RabshimamabadataPrisma
+    experiment: experiments_003
+    scene: PRISMA_Rabshi_clip.dat
+    shapefile: Rabshi_PRISMA2026/Rabshi_PRISMA2026.shp
+    class_field: Classvalue
+    bands_to_remove: []
+    clr_file: geology_classes.clr

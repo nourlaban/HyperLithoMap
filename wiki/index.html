@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperLithoMap Wiki — Home</title>
+<link rel="stylesheet" href="css/wiki.css">
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">HS</div>
+    <div class="brand-text">
+      <div class="brand-title">HyperLithoMap</div>
+      <div class="brand-sub">Hyperspectral Classification</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Home</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">⚡</span> Quick Start</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Science</div>
+    <a class="nav-link" href="science.html"><span class="nav-icon">🔬</span> Hyperspectral Imaging</a>
+    <a class="nav-link" href="science.html#geology"><span class="nav-icon">🪨</span> Geological Mapping</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Pipeline</div>
+    <a class="nav-link" href="pipeline.html"><span class="nav-icon">🔄</span> Workflow Overview</a>
+    <a class="nav-link" href="pipeline.html#preprocessing"><span class="nav-icon">⚙️</span> Preprocessing Steps</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Models</div>
+    <a class="nav-link" href="models.html"><span class="nav-icon">📊</span> Model Comparison</a>
+    <a class="nav-link" href="models.html#rf"><span class="nav-icon">🌲</span> Random Forest</a>
+    <a class="nav-link" href="models.html#xgb"><span class="nav-icon">⚡</span> XGBoost</a>
+    <a class="nav-link" href="models.html#mamba"><span class="nav-icon">🧬</span> S²Mamba</a>
+    <a class="nav-link" href="models.html#vit"><span class="nav-icon">👁️</span> SpectralFormer</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a class="nav-link" href="configuration.html"><span class="nav-icon">🛠️</span> Configuration</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">📖</span> CLI &amp; API</a>
+  </div>
+
+  <div class="sidebar-footer">HyperLithoMap v1.0 &nbsp;·&nbsp; MIT License</div>
+</nav>
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<div class="content">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <button class="menu-toggle">☰</button>
+      <strong>Wiki</strong>
+    </div>
+    <span class="topbar-tag">Documentation</span>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badge">Open Source · Research Framework</div>
+      <h1>Hyperspectral Lithological Classification</h1>
+      <p>An end-to-end framework for automated geological mapping from PRISMA, EnMap, and
+         ENVI-format hyperspectral imagery using classical and deep learning models.</p>
+      <div class="hero-meta">
+        <div class="hero-stat"><span class="val">3</span><span class="lbl">Satellites</span></div>
+        <div class="hero-stat"><span class="val">4</span><span class="lbl">Models</span></div>
+        <div class="hero-stat"><span class="val">234</span><span class="lbl">Spectral Bands</span></div>
+        <div class="hero-stat"><span class="val">30 m</span><span class="lbl">Resolution</span></div>
+        <div class="hero-stat"><span class="val">5</span><span class="lbl">Pipeline Steps</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation cards -->
+    <h2><span class="accent">◆</span> Documentation Sections</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🔬</div>
+        <h3>Scientific Background</h3>
+        <p>Spectral physics, mineral signatures, geological remote sensing fundamentals.</p>
+        <a class="card-link" href="science.html">Read →</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>Pipeline Workflow</h3>
+        <p>Five-step preprocessing pipeline with data flow diagrams and code references.</p>
+        <a class="card-link" href="pipeline.html">Read →</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>Models</h3>
+        <p>Architecture deep-dives for RF, XGBoost, S²Mamba and SpectralFormer.</p>
+        <a class="card-link" href="models.html">Read →</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛠️</div>
+        <h3>Configuration</h3>
+        <p>Add new satellites, tune hyperparameters, manage experiments.</p>
+        <a class="card-link" href="configuration.html">Read →</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Quick Start &amp; CLI</h3>
+        <p>Run the full pipeline in one command. Python API reference included.</p>
+        <a class="card-link" href="usage.html">Read →</a>
+      </div>
+    </div>
+
+    <!-- Architecture overview diagram -->
+    <h2><span class="accent">◆</span> System Architecture</h2>
+    <div class="diagram-wrap">
+      <svg width="780" height="160" viewBox="0 0 780 160" font-family="-apple-system,sans-serif">
+        <!-- Arrow defs -->
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#94a3b8"/>
+          </marker>
+        </defs>
+        <!-- Boxes -->
+        <g>
+          <!-- Satellite data -->
+          <rect x="10" y="40" width="120" height="80" rx="8" fill="#0d1b2a" stroke="#243447"/>
+          <text x="70" y="70" text-anchor="middle" fill="#f59e0b" font-size="20">🛰️</text>
+          <text x="70" y="90" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Satellite Data</text>
+          <text x="70" y="103" text-anchor="middle" fill="#64748b" font-size="9">PRISMA · EnMap · ENVI</text>
+        </g>
+        <!-- Arrow 1 -->
+        <line x1="130" y1="80" x2="166" y2="80" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="148" y="73" text-anchor="middle" fill="#94a3b8" font-size="8">convert</text>
+        <g>
+          <rect x="168" y="40" width="120" height="80" rx="8" fill="#162032" stroke="#243447"/>
+          <text x="228" y="70" text-anchor="middle" fill="#60a5fa" font-size="20">📦</text>
+          <text x="228" y="90" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Stacked GeoTIFF</text>
+          <text x="228" y="103" text-anchor="middle" fill="#64748b" font-size="9">float32 · nodata −9999</text>
+        </g>
+        <!-- Arrow 2 -->
+        <line x1="288" y1="80" x2="324" y2="80" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="306" y="73" text-anchor="middle" fill="#94a3b8" font-size="8">label</text>
+        <g>
+          <rect x="326" y="40" width="120" height="80" rx="8" fill="#162032" stroke="#243447"/>
+          <text x="386" y="70" text-anchor="middle" fill="#34d399" font-size="20">🗺️</text>
+          <text x="386" y="90" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Label Rasters</text>
+          <text x="386" y="103" text-anchor="middle" fill="#64748b" font-size="9">train · test masks</text>
+        </g>
+        <!-- Arrow 3 -->
+        <line x1="446" y1="80" x2="482" y2="80" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="464" y="73" text-anchor="middle" fill="#94a3b8" font-size="8">train</text>
+        <g>
+          <rect x="484" y="40" width="140" height="80" rx="8" fill="#162032" stroke="#243447"/>
+          <text x="554" y="70" text-anchor="middle" fill="#c084fc" font-size="20">🧠</text>
+          <text x="554" y="90" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">4 ML Models</text>
+          <text x="554" y="103" text-anchor="middle" fill="#64748b" font-size="9">RF · XGB · Mamba · ViT</text>
+        </g>
+        <!-- Arrow 4 -->
+        <line x1="624" y1="80" x2="660" y2="80" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="642" y="73" text-anchor="middle" fill="#94a3b8" font-size="8">predict</text>
+        <g>
+          <rect x="662" y="40" width="110" height="80" rx="8" fill="#162032" stroke="#243447"/>
+          <text x="717" y="70" text-anchor="middle" fill="#fbbf24" font-size="20">🗾</text>
+          <text x="717" y="90" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Lithological Map</text>
+          <text x="717" y="103" text-anchor="middle" fill="#64748b" font-size="9">GeoTIFF · PNG</text>
+        </g>
+      </svg>
+    </div>
+    <p class="diagram-caption">End-to-end data flow from raw satellite imagery to classified geological map.</p>
+
+    <!-- Key concepts -->
+    <h2><span class="accent">◆</span> Key Technical Concepts</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🌈</div>
+        <h3>Spectral Fingerprinting</h3>
+        <p>Each mineral has unique absorption bands across 400–2500 nm. 234 bands capture
+           diagnostic features invisible to RGB or multispectral sensors.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <h3>Spatial–Spectral Fusion</h3>
+        <p>Deep models extract 5×5 pixel patches and process spatial context together with
+           spectral content, resolving mixed pixels at geological boundaries.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h3>Nodata-Aware Normalisation</h3>
+        <p>Nodata pixels (−9999) are excluded from per-band min–max normalisation, preserving
+           full spectral contrast between geological units.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Class-Weighted Loss</h3>
+        <p>Inverse-frequency class weights prevent model collapse on rare but scientifically
+           important classes such as alteration zones and serpentinites.</p>
+      </div>
+    </div>
+
+    <!-- Repo structure -->
+    <h2><span class="accent">◆</span> Repository Map</h2>
+    <pre><span class="cmt"># Key files and their roles</span>
+HyperLithoMap/
+├── <span class="fn">main.py</span>                          <span class="cmt"># CLI entry-point — preprocess / train / run-all</span>
+├── <span class="pth">projutils/config.py</span>              <span class="cmt"># ALL paths, band lists, sampling settings</span>
+├── <span class="pth">src/pipeline.py</span>                  <span class="cmt"># Orchestrates preprocessing steps 1–4</span>
+├── <span class="pth">src/model_runner.py</span>              <span class="cmt"># Dispatches to model demo files</span>
+├── <span class="pth">preprocessing/</span>
+│   ├── converth5totiff.py           <span class="cmt"># PRISMA/EnMap/ENVI → stacked GeoTIFF</span>
+│   ├── convertshapelabelstoraster.py<span class="cmt"># Shapefile → label raster</span>
+│   ├── split_pixel.py               <span class="cmt"># Stratified train/test mask generation</span>
+│   ├── color_map.py                 <span class="cmt"># Apply .clr colour table</span>
+│   └── export_figures.py            <span class="cmt"># Export prediction maps → PNG figures</span>
+└── <span class="pth">hsmodel/</span>
+    ├── demo_RandomForests.py        <span class="cmt"># Random Forest training &amp; evaluation</span>
+    ├── demo_eXtremeGradientBoosting.py
+    ├── demo_mambaStateSpaceModel.py <span class="cmt"># S²Mamba training &amp; evaluation</span>
+    ├── demo_SpectralFormer.py       <span class="cmt"># ViT/SpectralFormer training</span>
+    ├── s2mamba.py                   <span class="cmt"># S²Mamba architecture (Wang et al. 2025)</span>
+    ├── vit_pytorch.py               <span class="cmt"># SpectralFormer architecture</span>
+    └── utils.py                     <span class="cmt"># Shared loaders, normalisation, metrics</span></pre>
+
+  </div><!-- /page-body -->
+</div><!-- /content -->
+</div><!-- /layout -->
+<script src="js/wiki.js"></script>
+</body>
+</html>

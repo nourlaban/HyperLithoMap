@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperLithoMap Wiki — Configuration</title>
+<link rel="stylesheet" href="css/wiki.css">
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">HS</div>
+    <div class="brand-text">
+      <div class="brand-title">HyperLithoMap</div>
+      <div class="brand-sub">Hyperspectral Classification</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Home</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">⚡</span> Quick Start</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Science</div>
+    <a class="nav-link" href="science.html"><span class="nav-icon">🔬</span> Hyperspectral Imaging</a>
+    <a class="nav-link" href="science.html#geology"><span class="nav-icon">🪨</span> Geological Mapping</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Pipeline</div>
+    <a class="nav-link" href="pipeline.html"><span class="nav-icon">🔄</span> Workflow Overview</a>
+    <a class="nav-link" href="pipeline.html#preprocessing"><span class="nav-icon">⚙️</span> Preprocessing Steps</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Models</div>
+    <a class="nav-link" href="models.html"><span class="nav-icon">📊</span> Model Comparison</a>
+    <a class="nav-link" href="models.html#rf"><span class="nav-icon">🌲</span> Random Forest</a>
+    <a class="nav-link" href="models.html#xgb"><span class="nav-icon">⚡</span> XGBoost</a>
+    <a class="nav-link" href="models.html#mamba"><span class="nav-icon">🧬</span> S²Mamba</a>
+    <a class="nav-link" href="models.html#vit"><span class="nav-icon">👁️</span> SpectralFormer</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a class="nav-link active" href="configuration.html"><span class="nav-icon">🛠️</span> Configuration</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">📖</span> CLI &amp; API</a>
+  </div>
+
+  <div class="sidebar-footer">HyperLithoMap v1.0 &nbsp;·&nbsp; MIT License</div>
+</nav>
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<div class="content">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <button class="menu-toggle">☰</button>
+      <a href="index.html">Wiki</a>
+      <span class="sep">›</span>
+      <strong>Configuration</strong>
+    </div>
+    <span class="topbar-tag">Reference</span>
+  </div>
+
+  <div class="page-body">
+
+    <h1>Configuration Guide</h1>
+    <div style="border-left:4px solid #d97706;background:rgba(217,119,6,.08);padding:12px 16px;margin:12px 0 20px;border-radius:4px">
+      <strong>Note:</strong> datasets are now declared in <code>configs/datasets.yaml</code> instead of
+      <code>if/elif</code> blocks in <code>projutils/config.py</code>, and the experiment folder is chosen with
+      <code>--experiment</code> rather than by editing <code>current_stamp</code>. The parameters described
+      below keep the same names and meaning; see the README section “Configuring a Dataset” for the YAML syntax.
+    </div>
+    <p>All paths, band lists, sampling settings, and experiment identifiers live in a
+       single file:
+       <a href="../projutils/config.py"><code>projutils/config.py</code></a>.
+       There are no environment variables, no YAML files to juggle — changing a number
+       in <code>config.py</code> is the full story.</p>
+
+    <!-- Config anatomy -->
+    <h2><span class="accent">◆</span> Config Class Anatomy</h2>
+    <pre><span class="cmt"># projutils/config.py — structure overview</span>
+
+<span class="kw">class</span> Config:
+    <span class="kw">def</span> __init__(self, satellite_name=<span class="str">"PRISMA"</span>):
+        self._init(satellite_name)
+
+    <span class="kw">def</span> reinit(self, satellite_name):
+        <span class="str">"""Mutates this instance in-place — all existing references see new paths."""</span>
+        self._init(satellite_name)
+
+    <span class="kw">def</span> _init(self, satellite_name):
+        <span class="cmt"># ── 1. Satellite-specific block ─────────────────────────────────</span>
+        <span class="kw">if</span> satellite_name == <span class="str">"PRISMA"</span>:        ...
+        <span class="kw">elif</span> satellite_name == <span class="str">"EnMap"</span>:       ...
+        <span class="kw">elif</span> satellite_name == <span class="str">"RabshiPRISMA"</span>: ...
+
+        <span class="cmt"># ── 2. Derived paths (shared, computed from above) ───────────────</span>
+        self.tifpath         = intermediate_dir / <span class="str">'vnir_swir_stackedd.tif'</span>
+        self.train_mask_path = intermediate_dir / <span class="str">'train_mask.tif'</span>
+        ...
+
+        <span class="cmt"># ── 3. Sampling settings ─────────────────────────────────────────</span>
+        self.samples   = 1000
+        self.test_size = 0.70
+
+        <span class="cmt"># ── 4. Auto-create all required directories ──────────────────────</span>
+        self._create_required_dirs()
+
+<span class="cmt"># Module-level singleton — imported by all pipeline components</span>
+config = Config()</pre>
+
+    <!-- All config keys -->
+    <h2><span class="accent">◆</span> Complete Parameter Reference</h2>
+
+    <h3>Satellite-specific keys</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>base_data_dir</code></td><td>str (path)</td>
+          <td>Root directory for this satellite's data tree</td>
+        </tr>
+        <tr>
+          <td><code>input_data_dir</code></td><td>str (path)</td>
+          <td><code>base_data_dir/input</code> — raw scene + shapefile</td>
+        </tr>
+        <tr>
+          <td><code>intermediate_dir</code></td><td>str (path)</td>
+          <td><code>base_data_dir/intermediate</code> — preprocessed rasters</td>
+        </tr>
+        <tr>
+          <td><code>output_dir</code></td><td>str (path)</td>
+          <td><code>base_data_dir/output</code> — model outputs</td>
+        </tr>
+        <tr>
+          <td><code>scene_id</code></td><td>str</td>
+          <td>Raw scene filename (used for logging only)</td>
+        </tr>
+        <tr>
+          <td><code>scene_path</code></td><td>str (path)</td>
+          <td>Full path to raw scene file</td>
+        </tr>
+        <tr>
+          <td><code>shapefile_path</code></td><td>str (path)</td>
+          <td>Full path to training polygon <code>.shp</code></td>
+        </tr>
+        <tr>
+          <td><code>class_field</code></td><td>str</td>
+          <td>Shapefile attribute column holding integer class codes</td>
+        </tr>
+        <tr>
+          <td><code>bands_to_remove</code> / <code>vnir_bands_to_remove</code></td>
+          <td>list[int]</td>
+          <td>Zero-indexed bands to drop during conversion (atmospheric windows)</td>
+        </tr>
+        <tr>
+          <td><code>clr_path</code></td><td>str (path) or absent</td>
+          <td>Path to <code>.clr</code> colour table; used by export_figures</td>
+        </tr>
+        <tr>
+          <td><code>current_stamp</code></td><td>str</td>
+          <td>Experiment version tag (e.g. <code>"003"</code>); controls output subfolder</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Derived paths (shared)</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Typical value</th></tr></thead>
+      <tbody>
+        <tr><td><code>tifpath</code></td><td><code>intermediate/vnir_swir_stackedd.tif</code></td></tr>
+        <tr><td><code>train_mask_path</code></td><td><code>intermediate/train_mask.tif</code></td></tr>
+        <tr><td><code>test_mask_path</code></td><td><code>intermediate/test_mask.tif</code></td></tr>
+        <tr><td><code>label_tif_path</code></td><td><code>intermediate/colored_class_labels.tif</code></td></tr>
+        <tr><td><code>experiment_path</code></td><td><code>output/experiments_003/</code></td></tr>
+        <tr><td><code>save_model_path</code></td><td><code>output/experiments_003/saved_models/</code></td></tr>
+        <tr><td><code>final_log_path</code></td><td><code>output/experiments_003/logs/</code></td></tr>
+        <tr><td><code>output_rf_tif_path</code></td><td><code>output/experiments_003/rf_final_prediction_map.tif</code></td></tr>
+        <tr><td><code>output_MAMBA_tif_path</code></td><td><code>output/experiments_003/MAMBA_final_prediction_map.tif</code></td></tr>
+        <tr><td><code>outputVIT_tif_path</code></td><td><code>output/experiments_003/VIT_final_prediction_map.tif</code></td></tr>
+        <tr><td><code>output_xgb_tif_path</code></td><td><code>output/experiments_003/xgb_final_prediction_map.tif</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Sampling settings</h3>
+    <table>
+      <thead><tr><th>Key</th><th>Default</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>samples</code></td><td>1000</td>
+          <td>Target number of labelled pixels per class drawn from the shapefile raster.
+              If a class has fewer labelled pixels than this, all available pixels are used.</td>
+        </tr>
+        <tr>
+          <td><code>test_size</code></td><td>0.70</td>
+          <td>Fraction of sampled pixels held out for test. 0.70 → 700 test, 300 train
+              (per class, before stratified split).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Adding a new satellite -->
+    <h2><span class="accent">◆</span> Adding a New Satellite</h2>
+    <p>Adding support for a new sensor type requires changes in four files.
+       Follow these steps in order.</p>
+
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div>
+          <strong>Add conversion function —
+            <a href="../preprocessing/converth5totiff.py"><code>preprocessing/converth5totiff.py</code></a></strong>
+          <p>Write a function that reads your raw format and writes a float32 GeoTIFF with
+             <code>nodata=−9999</code>. Follow the pattern of
+             <code>convert_dat_to_stacked_tiff()</code>:</p>
+          <pre><span class="kw">def</span> convert_mysat_to_stacked_tiff(input_path, output_tiff_path, bands_to_remove=None):
+    <span class="kw">with</span> rasterio.open(input_path) <span class="kw">as</span> src:
+        data = src.read().astype(np.float32)
+        transform, crs = src.transform, src.crs
+    <span class="cmt"># remove bad bands, mask nodata, write output...</span></pre>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div>
+          <strong>Add config block —
+            <a href="../projutils/config.py"><code>projutils/config.py</code></a></strong>
+          <p>Add an <code>elif</code> branch in <code>_init()</code>:</p>
+          <pre><span class="kw">elif</span> self.satellite_name == <span class="str">"MySatellite"</span>:
+    self.base_data_dir  = <span class="str">"data/my_satellite_data"</span>
+    self.input_data_dir = os.path.join(self.base_data_dir, <span class="str">'input'</span>)
+    self.intermediate_dir = os.path.join(self.base_data_dir, <span class="str">'intermediate'</span>)
+    self.output_dir     = os.path.join(self.base_data_dir, <span class="str">'output'</span>)
+    current_stamp       = <span class="str">"001"</span>
+    experiments_id      = <span class="str">f"experiments_{current_stamp}"</span>
+
+    self.scene_id       = <span class="str">"my_scene.tif"</span>
+    self.scene_path     = os.path.join(self.input_data_dir, self.scene_id)
+    self.shapefile_path = os.path.join(self.input_data_dir, <span class="str">'labels'</span>, <span class="str">'labels.shp'</span>)
+    self.bands_to_remove = []        <span class="cmt"># list zero-indexed bad bands</span>
+    self.class_field    = <span class="str">'Classcode'</span>
+    self.clr_path       = os.path.join(self.input_data_dir, <span class="str">'palette.clr'</span>)</pre>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div>
+          <strong>Add pipeline branch —
+            <a href="../src/pipeline.py"><code>src/pipeline.py</code></a></strong>
+          <p>Update the import and add an <code>elif</code> in
+             <code>_step_convert_satellite_data()</code>:</p>
+          <pre><span class="kw">from</span> preprocessing.converth5totiff <span class="kw">import</span> (
+    convert_h5_to_stacked_tiff, convert_enmap_to_stacked_tiff,
+    convert_dat_to_stacked_tiff, convert_mysat_to_stacked_tiff  <span class="cmt"># add this</span>
+)
+
+<span class="cmt"># inside _step_convert_satellite_data():</span>
+<span class="kw">elif</span> self.config.satellite_name == <span class="str">'MySatellite'</span>:
+    convert_mysat_to_stacked_tiff(
+        input_path       = self.config.scene_path,
+        output_tiff_path = self.config.tifpath,
+        bands_to_remove  = self.config.bands_to_remove
+    )</pre>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <div>
+          <strong>Register CLI choice —
+            <a href="../main.py"><code>main.py</code></a></strong>
+          <p>Add the new name to both <code>choices</code> lists in <code>add_common_args()</code>
+             and the parent parser:</p>
+          <pre>choices=[<span class="str">'PRISMA'</span>, <span class="str">'EnMap'</span>, <span class="str">'RabshiPRISMA'</span>, <span class="str">'MySatellite'</span>]</pre>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">5</div>
+        <div>
+          <strong>Test end-to-end</strong>
+          <pre>python main.py run-all --dataset MySatellite --verbose</pre>
+          <p>Check that <code>intermediate/vnir_swir_stackedd.tif</code> is created with the
+             expected band count, CRS, and nodata value before proceeding.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experiment management -->
+    <h2><span class="accent">◆</span> Experiment Management</h2>
+    <p>Each experiment version is isolated by a short <code>current_stamp</code> string
+       inside the satellite block. Bumping the stamp creates a new output directory
+       without touching previous results.</p>
+
+    <pre><span class="cmt"># In the PRISMA block of projutils/config.py:</span>
+current_stamp = <span class="str">"003"</span>          <span class="cmt"># → output/experiments_003/</span>
+
+<span class="cmt"># To start a new experiment with different hyperparameters:</span>
+current_stamp = <span class="str">"004"</span>          <span class="cmt"># → output/experiments_004/</span></pre>
+
+    <div class="info-box">
+      <strong>Tip:</strong> You can also use a timestamp stamp for fully unique runs:
+      <pre>from datetime import datetime
+current_stamp = datetime.now().strftime(<span class="str">"%Y_%m_%d_%H_%M_%S"</span>)</pre>
+      This is already in the code as a commented-out alternative on the line above
+      <code>current_stamp = "003"</code>.
+    </div>
+
+    <!-- Tuning hyperparameters -->
+    <h2><span class="accent">◆</span> Tuning Model Hyperparameters</h2>
+    <p>Deep model hyperparameters are in the <code>Args</code> class at the top of each
+       demo file. They are plain Python class attributes — no CLI flags, no config file
+       lookup. Edit the value directly and re-run.</p>
+
+    <h3>S²Mamba — <a href="../hsmodel/demo_mambaStateSpaceModel.py"><code>hsmodel/demo_mambaStateSpaceModel.py:22–35</code></a></h3>
+    <table>
+      <thead><tr><th>Attribute</th><th>Current</th><th>To increase accuracy</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>patches</code></td><td>5</td>
+          <td>Try 7 or 9 for larger spatial context (increases memory)</td>
+        </tr>
+        <tr>
+          <td><code>epochs</code></td><td>200</td>
+          <td>Increase to 400 if OA is still rising at epoch 200</td>
+        </tr>
+        <tr>
+          <td><code>lr</code></td><td>5e-4</td>
+          <td>Lower to 1e-4 if training is unstable (loss spikes)</td>
+        </tr>
+        <tr>
+          <td><code>batch_size</code></td><td>64</td>
+          <td>Increase to 128 if GPU has free memory</td>
+        </tr>
+        <tr>
+          <td><code>dims</code></td><td>[64]</td>
+          <td>Try [128] for more model capacity (doubles params)</td>
+        </tr>
+        <tr>
+          <td><code>depths</code></td><td>[1]</td>
+          <td>Try [2] for deeper feature extraction</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>SpectralFormer — <a href="../hsmodel/demo_SpectralFormer.py"><code>hsmodel/demo_SpectralFormer.py:23–38</code></a></h3>
+    <table>
+      <thead><tr><th>Attribute</th><th>Current</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>band_patches</code></td><td>3</td>
+          <td>Groups of consecutive bands per token. Try 1 (one band per token) or 5.</td>
+        </tr>
+        <tr>
+          <td><code>patches</code></td><td>5</td>
+          <td>Spatial patch size. Must match S²Mamba for fair comparison.</td>
+        </tr>
+        <tr>
+          <td><code>batch_size</code></td><td>128</td>
+          <td>Larger batches stabilise transformer training.</td>
+        </tr>
+        <tr>
+          <td><code>epochs</code></td><td>200</td>
+          <td>Transformer typically benefits from more epochs than SSM.</td>
+        </tr>
+        <tr>
+          <td><code>gamma</code></td><td>0.9</td>
+          <td>StepLR decay factor; lower = faster decay.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Sampling settings -->
+    <h2><span class="accent">◆</span> Adjusting Sampling Settings</h2>
+
+    <table>
+      <thead><tr><th>Scenario</th><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Quick iteration / few labelled polygons</td>
+          <td><code>config.samples</code></td>
+          <td>200–500 (fewer pixels → faster; less accurate)</td>
+        </tr>
+        <tr>
+          <td>Full accuracy evaluation</td>
+          <td><code>config.samples</code></td>
+          <td>1000 (default)</td>
+        </tr>
+        <tr>
+          <td>Severe class imbalance in shapefile</td>
+          <td><code>config.samples</code></td>
+          <td>Reduce to match the smallest class size</td>
+        </tr>
+        <tr>
+          <td>More training data, smaller test set</td>
+          <td><code>config.test_size</code></td>
+          <td>0.50 (50/50 split instead of 30/70)</td>
+        </tr>
+        <tr>
+          <td>Strict hold-out evaluation</td>
+          <td><code>config.test_size</code></td>
+          <td>0.80 (train only 200, test on 800)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Bad bands -->
+    <h2><span class="accent">◆</span> Identifying and Removing Bad Bands</h2>
+    <p>Bad bands are spectral channels dominated by atmospheric absorption or sensor
+       noise. They carry no useful geological signal and should be excluded before
+       training. Typical windows to remove:</p>
+
+    <table>
+      <thead><tr><th>Wavelength range</th><th>Cause</th><th>PRISMA bands (approx)</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1350–1450 nm</td>
+          <td>Water vapour absorption</td>
+          <td>SWIR bands 40–56</td>
+        </tr>
+        <tr>
+          <td>1800–1950 nm</td>
+          <td>Water vapour absorption</td>
+          <td>SWIR bands 86–111</td>
+        </tr>
+        <tr>
+          <td>2450–2500 nm</td>
+          <td>CO₂ + detector edge noise</td>
+          <td>SWIR bands 152–171</td>
+        </tr>
+        <tr>
+          <td>First 5 VNIR bands</td>
+          <td>Detector warm-up artefact</td>
+          <td>VNIR bands 1–5</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>To identify bad bands for a new sensor, plot the mean spectrum across valid
+       pixels and look for channels with near-zero or highly variable reflectance:</p>
+
+    <pre><span class="kw">import</span> rasterio, numpy <span class="kw">as</span> np, matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="kw">with</span> rasterio.open(<span class="str">"intermediate/vnir_swir_stackedd.tif"</span>) <span class="kw">as</span> src:
+    data = src.read()                       <span class="cmt"># bands × H × W</span>
+
+nodata = -9999.0
+means = []
+<span class="kw">for</span> b <span class="kw">in</span> range(data.shape[0]):
+    valid = data[b][data[b] != nodata]
+    means.append(valid.mean() <span class="kw">if</span> len(valid) > 0 <span class="kw">else</span> np.nan)
+
+plt.plot(means)
+plt.xlabel(<span class="str">"Band index"</span>); plt.ylabel(<span class="str">"Mean reflectance"</span>)
+plt.title(<span class="str">"Mean spectrum — identify near-zero bands"</span>)
+plt.show()</pre>
+
+    <!-- CLR colour table -->
+    <h2><span class="accent">◆</span> Colour Table (.clr) Format</h2>
+    <p>The <code>.clr</code> file maps integer class values to RGBA colours and human-readable
+       labels. It is a plain-text file where each row is:</p>
+    <pre>value  R  G  B  alpha  Class_Label</pre>
+
+    <p>Example (<code>plate.clr</code> for Rabshi PRISMA):</p>
+    <pre>1   130  80  50  255  Hornfels
+2    60 100 200  255  Limestone
+3   200 160  60  255  Mudstone-siltstone
+4   180  60  80  255  Phyllite
+5    90 180  90  255  Quartzite
+6   220 200  60  255  Sandstone
+7    60 160 180  255  Serpentinite
+8   180  80 180  255  Skarn</pre>
+
+    <p>The <code>export_figures.py</code> module reads this file via
+       <code>_parse_clr()</code> and builds the matplotlib <code>ListedColormap</code>
+       used in all publication figures. If no <code>.clr</code> file exists, a default
+       10-colour palette from matplotlib's <code>tab10</code> is used as fallback.</p>
+
+  </div><!-- /page-body -->
+</div><!-- /content -->
+</div><!-- /layout -->
+<script src="js/wiki.js"></script>
+</body>
+</html>

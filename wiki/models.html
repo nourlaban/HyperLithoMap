@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperLithoMap Wiki — Models</title>
+<link rel="stylesheet" href="css/wiki.css">
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">HS</div>
+    <div class="brand-text">
+      <div class="brand-title">HyperLithoMap</div>
+      <div class="brand-sub">Hyperspectral Classification</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Home</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">⚡</span> Quick Start</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Science</div>
+    <a class="nav-link" href="science.html"><span class="nav-icon">🔬</span> Hyperspectral Imaging</a>
+    <a class="nav-link" href="science.html#geology"><span class="nav-icon">🪨</span> Geological Mapping</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Pipeline</div>
+    <a class="nav-link" href="pipeline.html"><span class="nav-icon">🔄</span> Workflow Overview</a>
+    <a class="nav-link" href="pipeline.html#preprocessing"><span class="nav-icon">⚙️</span> Preprocessing Steps</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Models</div>
+    <a class="nav-link active" href="models.html"><span class="nav-icon">📊</span> Model Comparison</a>
+    <a class="nav-link" href="models.html#rf"><span class="nav-icon">🌲</span> Random Forest</a>
+    <a class="nav-link" href="models.html#xgb"><span class="nav-icon">⚡</span> XGBoost</a>
+    <a class="nav-link" href="models.html#mamba"><span class="nav-icon">🧬</span> S²Mamba</a>
+    <a class="nav-link" href="models.html#vit"><span class="nav-icon">👁️</span> SpectralFormer</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a class="nav-link" href="configuration.html"><span class="nav-icon">🛠️</span> Configuration</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">📖</span> CLI &amp; API</a>
+  </div>
+
+  <div class="sidebar-footer">HyperLithoMap v1.0 &nbsp;·&nbsp; MIT License</div>
+</nav>
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<div class="content">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <button class="menu-toggle">☰</button>
+      <a href="index.html">Wiki</a>
+      <span class="sep">›</span>
+      <strong>Models</strong>
+    </div>
+    <span class="topbar-tag">Models</span>
+  </div>
+
+  <div class="page-body">
+
+    <h1>Model Architectures &amp; Comparison</h1>
+    <p>HyperLithoMap includes four classifiers at increasing levels of architectural complexity.
+       Classical tree methods (RF, XGBoost) treat each pixel as an independent spectral
+       vector; deep models (S²Mamba, SpectralFormer) jointly model the 5×5 spatial
+       neighbourhood together with inter-band spectral structure.</p>
+
+    <!-- Comparison -->
+    <h2><span class="accent">◆</span> At-a-Glance Comparison</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th><th>Type</th><th>Input</th>
+          <th>OA (Rabshi exp_003)</th><th>GPU req.</th><th>Train time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>S²Mamba</strong></td><td>Deep — SSM</td><td>5×5×234 patch</td>
+          <td class="num">0.9957</td><td>Yes</td><td>~25 min</td>
+        </tr>
+        <tr>
+          <td><strong>SpectralFormer</strong></td><td>Deep — ViT</td><td>5×5×234 patch</td>
+          <td class="num">0.9819</td><td>Yes</td><td>~35 min</td>
+        </tr>
+        <tr>
+          <td><strong>XGBoost</strong></td><td>Classical — boosting</td><td>234-dim vector</td>
+          <td class="num">0.9569</td><td>No</td><td>~3 min</td>
+        </tr>
+        <tr>
+          <td><strong>Random Forest</strong></td><td>Classical — bagging</td><td>234-dim vector</td>
+          <td class="num">0.9471</td><td>No</td><td>~2 min</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Performance bars -->
+    <div style="margin: 1.5rem 0">
+      <div style="margin-bottom:.8rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+          <span style="color:#e2e8f0;font-size:.85rem">S²Mamba</span>
+          <span style="color:#34d399;font-size:.85rem;font-weight:700">99.57 %</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" data-width="99.57%" style="width:0%;background:#34d399"></div></div>
+      </div>
+      <div style="margin-bottom:.8rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+          <span style="color:#e2e8f0;font-size:.85rem">SpectralFormer</span>
+          <span style="color:#60a5fa;font-size:.85rem;font-weight:700">98.19 %</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" data-width="98.19%" style="width:0%;background:#60a5fa"></div></div>
+      </div>
+      <div style="margin-bottom:.8rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+          <span style="color:#e2e8f0;font-size:.85rem">XGBoost</span>
+          <span style="color:#f59e0b;font-size:.85rem;font-weight:700">95.69 %</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" data-width="95.69%" style="width:0%;background:#f59e0b"></div></div>
+      </div>
+      <div style="margin-bottom:.8rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+          <span style="color:#e2e8f0;font-size:.85rem">Random Forest</span>
+          <span style="color:#94a3b8;font-size:.85rem;font-weight:700">94.71 %</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" data-width="94.71%" style="width:0%;background:#94a3b8"></div></div>
+      </div>
+    </div>
+
+    <!-- How deep models use spatial context -->
+    <h2><span class="accent">◆</span> Spatial–Spectral Input Construction</h2>
+    <p>Classical models see one pixel at a time: a 234-dimensional feature vector.
+       Deep models see a centred 5×5 neighbourhood, giving contextual information
+       about mineral boundary gradients and mixed-pixel transitions.</p>
+
+    <div class="diagram-wrap">
+      <svg width="560" height="200" viewBox="0 0 560 200" font-family="-apple-system,sans-serif">
+        <defs>
+          <marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#94a3b8"/>
+          </marker>
+        </defs>
+
+        <!-- 5x5 pixel grid -->
+        <g transform="translate(30,40)">
+          <text x="55" y="-10" text-anchor="middle" fill="#94a3b8" font-size="10">5×5 pixel patch</text>
+          <!-- Grid cells -->
+          <rect x="0"  y="0"  width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="22" y="0"  width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="44" y="0"  width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="66" y="0"  width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="88" y="0"  width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+
+          <rect x="0"  y="22" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="22" y="22" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="44" y="22" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="66" y="22" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="88" y="22" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+
+          <rect x="0"  y="44" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="22" y="44" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="44" y="44" width="22" height="22" rx="2" fill="#d4952a" stroke="#d4952a"/><!-- centre -->
+          <rect x="66" y="44" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="88" y="44" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+
+          <rect x="0"  y="66" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="22" y="66" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="44" y="66" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="66" y="66" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="88" y="66" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+
+          <rect x="0"  y="88" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="22" y="88" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="44" y="88" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="66" y="88" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+          <rect x="88" y="88" width="22" height="22" rx="2" fill="#162032" stroke="#243447"/>
+
+          <text x="55" y="126" text-anchor="middle" fill="#d4952a" font-size="9">centre pixel (to classify)</text>
+        </g>
+
+        <!-- Arrow -->
+        <line x1="148" y1="100" x2="168" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <!-- Spectrum bar -->
+        <g transform="translate(172,40)">
+          <text x="60" y="-10" text-anchor="middle" fill="#94a3b8" font-size="10">per-pixel spectrum (234 bands)</text>
+          <rect x="0" y="0" width="120" height="110" rx="4" fill="#0d1b2a" stroke="#243447"/>
+          <!-- Spectrum lines -->
+          <polyline points="6,90 12,75 18,65 24,70 30,55 36,45 42,50 48,40 54,35 60,42 66,30 72,35 78,50 84,55 90,45 96,38 102,42 108,50 114,60"
+                    fill="none" stroke="#34d399" stroke-width="1.5"/>
+          <text x="60" y="108" text-anchor="middle" fill="#64748b" font-size="8">400 nm → 2500 nm</text>
+        </g>
+
+        <!-- Arrow -->
+        <line x1="300" y1="100" x2="320" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <!-- Model box -->
+        <rect x="324" y="60" width="100" height="80" rx="6" fill="#162032" stroke="#243447"/>
+        <text x="374" y="90" text-anchor="middle" fill="#c084fc" font-size="13">🧠</text>
+        <text x="374" y="108" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">S²Mamba /</text>
+        <text x="374" y="121" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">SpectralFormer</text>
+
+        <!-- Arrow -->
+        <line x1="424" y1="100" x2="444" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <!-- Class label -->
+        <rect x="448" y="70" width="100" height="60" rx="6" fill="#162032" stroke="#34d399" stroke-width="1.5"/>
+        <text x="498" y="98" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700">Limestone</text>
+        <text x="498" y="114" text-anchor="middle" fill="#64748b" font-size="9">class 2</text>
+      </svg>
+    </div>
+
+    <!-- RF -->
+    <h2 id="rf"><span class="accent">◆</span> Random Forest</h2>
+    <div class="card-grid" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <h3>Architecture</h3>
+        <p>Ensemble of decision trees trained via bagging (bootstrap aggregation).
+           Each tree sees a random subset of features (bands) at each split node.
+           Final class is the majority vote across all trees.</p>
+        <ul>
+          <li>Input: 234-dim spectral vector per pixel</li>
+          <li>No spatial context — each pixel independent</li>
+          <li>Non-parametric, no normalisation required</li>
+          <li>Feature importance scores available</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>When to use RF</h3>
+        <ul>
+          <li>Rapid baseline without GPU</li>
+          <li>Interpretability needed (band importance)</li>
+          <li>Small training sets (&lt;500 pts/class)</li>
+          <li>First experiment on a new scene</li>
+        </ul>
+        <div class="info-box" style="margin-top:.8rem">
+          <strong>Code:</strong>
+          <a href="../hsmodel/demo_RandomForests.py"><code>hsmodel/demo_RandomForests.py</code></a>
+        </div>
+      </div>
+    </div>
+
+    <h4>Hyperparameters</h4>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>n_estimators</code></td><td>100</td><td>Number of trees; more = lower variance</td></tr>
+        <tr><td><code>max_features</code></td><td><code>'sqrt'</code></td><td>Features per split</td></tr>
+        <tr><td><code>class_weight</code></td><td><code>'balanced'</code></td><td>Inverse-frequency weighting</td></tr>
+        <tr><td><code>n_jobs</code></td><td>−1</td><td>Use all CPU cores</td></tr>
+      </tbody>
+    </table>
+
+    <!-- XGBoost -->
+    <h2 id="xgb"><span class="accent">◆</span> XGBoost</h2>
+    <div class="card-grid" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <h3>Architecture</h3>
+        <p>Gradient-boosted decision trees where each successive tree corrects the
+           residual errors of the previous ensemble. Uses second-order gradients,
+           L1/L2 regularisation, and column/row subsampling for efficiency.</p>
+        <ul>
+          <li>Input: 234-dim spectral vector</li>
+          <li>Typical OA gain of +1–2 % over RF on hyperspectral data</li>
+          <li>Built-in handling of class imbalance via <code>scale_pos_weight</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>When to use XGBoost</h3>
+        <ul>
+          <li>Best classical model — use instead of RF when performance matters</li>
+          <li>When GPU is unavailable but deep model quality is needed</li>
+          <li>Fast iteration on hyperparameter tuning</li>
+        </ul>
+        <div class="info-box" style="margin-top:.8rem">
+          <strong>Code:</strong>
+          <a href="../hsmodel/demo_eXtremeGradientBoosting.py"><code>hsmodel/demo_eXtremeGradientBoosting.py</code></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- S2Mamba -->
+    <h2 id="mamba"><span class="accent">◆</span> S²Mamba — Spectral-Spatial Mamba</h2>
+
+    <div class="info-box">
+      <strong>Reference:</strong> Wang et al. (2025) — <em>S²Mamba: A Spatial-Spectral State
+      Space Model for Hyperspectral Image Classification</em>.
+      Architecture file: <a href="../hsmodel/s2mamba.py"><code>hsmodel/s2mamba.py</code></a>
+      &nbsp;·&nbsp; Demo: <a href="../hsmodel/demo_mambaStateSpaceModel.py"><code>hsmodel/demo_mambaStateSpaceModel.py</code></a>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <h3>Why Mamba for HSI?</h3>
+        <p>Transformers model global pairwise attention in O(N²) time. For a 234-band
+           spectrum, full self-attention is feasible, but for a 5×5×234 spatial-spectral
+           token sequence it becomes expensive. Mamba uses a selective State Space Model
+           (SSM) that processes sequences in linear time O(N) while learning which
+           spectral positions to "remember" — crucial for modelling sharp absorption
+           features at specific wavelengths.</p>
+      </div>
+      <div class="card">
+        <h3>Key properties</h3>
+        <ul>
+          <li>Linear-complexity selective SSM (Mamba block)</li>
+          <li>Dual-branch: spectral branch + spatial branch, fused at output</li>
+          <li>Depths = [1], dims = [64] — lightweight for pixel classification</li>
+          <li>Dropout on attention + path for generalisation</li>
+          <li>Achieves highest OA (99.57 %) among all four models</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Mamba architecture diagram -->
+    <div class="diagram-wrap">
+      <svg width="720" height="220" viewBox="0 0 720 220" font-family="-apple-system,sans-serif">
+        <defs>
+          <marker id="arrm" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#94a3b8"/>
+          </marker>
+        </defs>
+
+        <!-- Input patch -->
+        <rect x="10" y="80" width="80" height="60" rx="6" fill="#0d1b2a" stroke="#243447"/>
+        <text x="50" y="105" text-anchor="middle" fill="#94a3b8" font-size="9">Input patch</text>
+        <text x="50" y="120" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">5×5×234</text>
+        <text x="50" y="133" text-anchor="middle" fill="#64748b" font-size="8">float32</text>
+
+        <line x1="90" y1="110" x2="110" y2="110" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrm)"/>
+
+        <!-- Tokenisation -->
+        <rect x="112" y="75" width="90" height="70" rx="6" fill="#162032" stroke="#243447"/>
+        <text x="157" y="100" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="700">Tokenise</text>
+        <text x="157" y="115" text-anchor="middle" fill="#64748b" font-size="8">patch → tokens</text>
+        <text x="157" y="128" text-anchor="middle" fill="#64748b" font-size="8">pos embedding</text>
+        <text x="157" y="141" text-anchor="middle" fill="#64748b" font-size="8">dim=64</text>
+
+        <line x1="202" y1="110" x2="222" y2="110" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrm)"/>
+
+        <!-- Spectral Mamba branch -->
+        <rect x="224" y="40" width="130" height="60" rx="6" fill="#162032" stroke="#c084fc" stroke-width="1.5"/>
+        <text x="289" y="62" text-anchor="middle" fill="#c084fc" font-size="9" font-weight="700">Spectral Mamba Block</text>
+        <text x="289" y="76" text-anchor="middle" fill="#64748b" font-size="8">band-wise SSM scan</text>
+        <text x="289" y="89" text-anchor="middle" fill="#64748b" font-size="8">selective state retention</text>
+
+        <!-- Spatial Mamba branch -->
+        <rect x="224" y="120" width="130" height="60" rx="6" fill="#162032" stroke="#34d399" stroke-width="1.5"/>
+        <text x="289" y="142" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">Spatial Mamba Block</text>
+        <text x="289" y="156" text-anchor="middle" fill="#64748b" font-size="8">spatial neighbourhood scan</text>
+        <text x="289" y="169" text-anchor="middle" fill="#64748b" font-size="8">5×5 pixel context</text>
+
+        <!-- Branch arrows -->
+        <line x1="222" y1="95"  x2="224" y2="70"  stroke="#c084fc" stroke-width="1.5" marker-end="url(#arrm)"/>
+        <line x1="222" y1="125" x2="224" y2="150" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrm)"/>
+
+        <!-- Merge arrows -->
+        <line x1="354" y1="70"  x2="390" y2="100" stroke="#c084fc" stroke-width="1.5" marker-end="url(#arrm)"/>
+        <line x1="354" y1="150" x2="390" y2="120" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrm)"/>
+
+        <!-- Fusion -->
+        <rect x="392" y="75" width="90" height="70" rx="6" fill="#162032" stroke="#d4952a" stroke-width="1.5"/>
+        <text x="437" y="102" text-anchor="middle" fill="#d4952a" font-size="9" font-weight="700">Fusion</text>
+        <text x="437" y="115" text-anchor="middle" fill="#64748b" font-size="8">concatenate +</text>
+        <text x="437" y="128" text-anchor="middle" fill="#64748b" font-size="8">layer norm</text>
+        <text x="437" y="141" text-anchor="middle" fill="#64748b" font-size="8">dropout</text>
+
+        <line x1="482" y1="110" x2="502" y2="110" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrm)"/>
+
+        <!-- Classifier -->
+        <rect x="504" y="80" width="90" height="60" rx="6" fill="#162032" stroke="#243447"/>
+        <text x="549" y="105" text-anchor="middle" fill="#e2e8f0" font-size="9" font-weight="700">Classifier head</text>
+        <text x="549" y="120" text-anchor="middle" fill="#64748b" font-size="8">Linear → N classes</text>
+        <text x="549" y="133" text-anchor="middle" fill="#64748b" font-size="8">CrossEntropy loss</text>
+
+        <line x1="594" y1="110" x2="614" y2="110" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrm)"/>
+
+        <!-- Output -->
+        <rect x="616" y="88" width="90" height="44" rx="6" fill="#162032" stroke="#34d399" stroke-width="1.5"/>
+        <text x="661" y="107" text-anchor="middle" fill="#34d399" font-size="10" font-weight="700">Class label</text>
+        <text x="661" y="122" text-anchor="middle" fill="#64748b" font-size="8">1 … N classes</text>
+
+        <!-- Caption -->
+        <text x="360" y="210" text-anchor="middle" fill="#64748b" font-size="9">
+          Dual-branch S²Mamba: spectral scan (band axis) + spatial scan (pixel neighbourhood) fused before classification
+        </text>
+      </svg>
+    </div>
+
+    <h4>Training Hyperparameters</h4>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Location in code</th></tr></thead>
+      <tbody>
+        <tr><td><code>patches</code></td><td>5</td><td><a href="../hsmodel/demo_mambaStateSpaceModel.py"><code>Args.patches</code></a></td></tr>
+        <tr><td><code>epochs</code></td><td>200</td><td><code>Args.epochs</code></td></tr>
+        <tr><td><code>batch_size</code></td><td>64</td><td><code>Args.batch_size</code></td></tr>
+        <tr><td><code>lr</code></td><td>5×10⁻⁴</td><td><code>Args.lr</code></td></tr>
+        <tr><td><code>weight_decay</code></td><td>5×10⁻³</td><td><code>Args.weight_decay</code></td></tr>
+        <tr><td><code>gamma</code> (LR decay)</td><td>0.99/epoch</td><td><code>Args.gamma</code></td></tr>
+        <tr><td><code>dropout</code></td><td>0.1</td><td><code>Args.dropout</code></td></tr>
+        <tr><td>Optimiser</td><td>AdamW</td><td><code>demo_mambaStateSpaceModel.py:82</code></td></tr>
+        <tr><td>LR scheduler</td><td>ExponentialLR</td><td><code>demo_mambaStateSpaceModel.py:83</code></td></tr>
+        <tr><td>dims</td><td>[64]</td><td><code>demo_mambaStateSpaceModel.py</code></td></tr>
+        <tr><td>depths</td><td>[1]</td><td><code>demo_mambaStateSpaceModel.py</code></td></tr>
+        <tr><td>Loss</td><td>CrossEntropyLoss (class-weighted)</td><td><code>demo_mambaStateSpaceModel.py:81</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="info-box">
+      <strong>Best-model saving:</strong> The training loop saves a checkpoint only when
+      validation OA improves (not at every epoch), so the loaded weights always correspond
+      to the highest accuracy seen during training. See
+      <a href="../hsmodel/demo_mambaStateSpaceModel.py"><code>demo_mambaStateSpaceModel.py:90–108</code></a>.
+    </div>
+
+    <!-- SpectralFormer -->
+    <h2 id="vit"><span class="accent">◆</span> SpectralFormer — Vision Transformer</h2>
+
+    <div class="info-box">
+      <strong>Reference:</strong> Hong et al. (2022) — <em>SpectralFormer: Rethinking
+      Hyperspectral Image Classification with Transformers</em>.
+      Architecture file: <a href="../hsmodel/vit_pytorch.py"><code>hsmodel/vit_pytorch.py</code></a>
+      &nbsp;·&nbsp; Demo: <a href="../hsmodel/demo_SpectralFormer.py"><code>hsmodel/demo_SpectralFormer.py</code></a>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <h3>Architecture</h3>
+        <p>Applies multi-head self-attention along the <em>spectral</em> axis: the 234
+           bands are divided into overlapping groups of <code>band_patches=3</code>
+           consecutive bands. Each group becomes one token with a learned embedding.
+           The transformer encoder models cross-band dependencies (e.g., the correlation
+           between the Fe²⁺ absorption at 1000 nm and the clay Al-OH feature at 2200 nm).</p>
+      </div>
+      <div class="card">
+        <h3>Band-patch grouping</h3>
+        <p>The <code>gain_neighborhood_band()</code> function in
+           <a href="../hsmodel/demo_SpectralFormer.py"><code>demo_SpectralFormer.py:114</code></a>
+           creates a sliding window over the spectral dimension:</p>
+        <ul>
+          <li>Input: N × 5 × 5 × 234</li>
+          <li>After grouping: N × (5×5×3) × 234 = N × 75 × 234</li>
+          <li>Each of the 234 tokens contains 3 consecutive bands of the full patch</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SpectralFormer diagram -->
+    <div class="diagram-wrap">
+      <svg width="700" height="200" viewBox="0 0 700 200" font-family="-apple-system,sans-serif">
+        <defs>
+          <marker id="arrv" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#94a3b8"/>
+          </marker>
+        </defs>
+
+        <!-- Input -->
+        <rect x="10" y="75" width="80" height="50" rx="5" fill="#0d1b2a" stroke="#243447"/>
+        <text x="50" y="96" text-anchor="middle" fill="#94a3b8" font-size="9">Patch</text>
+        <text x="50" y="110" text-anchor="middle" fill="#e2e8f0" font-size="9" font-weight="700">5×5×234</text>
+        <text x="50" y="122" text-anchor="middle" fill="#64748b" font-size="8">+band grouping</text>
+
+        <line x1="90" y1="100" x2="108" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrv)"/>
+
+        <!-- Embedding -->
+        <rect x="110" y="70" width="90" height="60" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="155" y="95" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="700">Spectral</text>
+        <text x="155" y="108" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="700">Embedding</text>
+        <text x="155" y="122" text-anchor="middle" fill="#64748b" font-size="8">N×75×234 tokens</text>
+
+        <line x1="200" y1="100" x2="218" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrv)"/>
+
+        <!-- Transformer blocks (stacked) -->
+        <rect x="220" y="55" width="200" height="90" rx="5" fill="#0d1b2a" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="320" y="78" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="700">Transformer Encoder (×L layers)</text>
+        <rect x="235" y="85" width="170" height="28" rx="4" fill="#162032" stroke="#243447"/>
+        <text x="320" y="100" text-anchor="middle" fill="#e2e8f0" font-size="8">Multi-head Self-Attention (spectral axis)</text>
+        <rect x="235" y="116" width="170" height="20" rx="4" fill="#162032" stroke="#243447"/>
+        <text x="320" y="130" text-anchor="middle" fill="#94a3b8" font-size="8">LayerNorm + Feed-forward + Dropout</text>
+
+        <line x1="420" y1="100" x2="438" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrv)"/>
+
+        <!-- Pool + head -->
+        <rect x="440" y="70" width="100" height="60" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="490" y="96" text-anchor="middle" fill="#e2e8f0" font-size="9" font-weight="700">Mean pool</text>
+        <text x="490" y="110" text-anchor="middle" fill="#64748b" font-size="8">over tokens</text>
+        <text x="490" y="122" text-anchor="middle" fill="#64748b" font-size="8">Linear → N cls</text>
+
+        <line x1="540" y1="100" x2="558" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrv)"/>
+
+        <!-- Output -->
+        <rect x="560" y="78" width="120" height="44" rx="5" fill="#162032" stroke="#34d399" stroke-width="1.5"/>
+        <text x="620" y="98" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">Class softmax</text>
+        <text x="620" y="113" text-anchor="middle" fill="#64748b" font-size="8">N lithological classes</text>
+
+        <text x="350" y="185" text-anchor="middle" fill="#64748b" font-size="9">
+          SpectralFormer: self-attention along spectral bands captures long-range mineral correlation
+        </text>
+      </svg>
+    </div>
+
+    <h4>Training Hyperparameters</h4>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Location</th></tr></thead>
+      <tbody>
+        <tr><td><code>patches</code></td><td>5</td><td><a href="../hsmodel/demo_SpectralFormer.py"><code>Args.patches</code></a></td></tr>
+        <tr><td><code>band_patches</code></td><td>3</td><td><code>Args.band_patches</code></td></tr>
+        <tr><td><code>epochs</code></td><td>200</td><td><code>Args.epochs</code></td></tr>
+        <tr><td><code>batch_size</code></td><td>128</td><td><code>Args.batch_size</code></td></tr>
+        <tr><td><code>learning_rate</code></td><td>5×10⁻⁴</td><td><code>Args.learning_rate</code></td></tr>
+        <tr><td><code>weight_decay</code></td><td>0</td><td><code>Args.weight_decay</code></td></tr>
+        <tr><td><code>gamma</code> (StepLR)</td><td>0.9</td><td><code>Args.gamma</code></td></tr>
+        <tr><td>Optimiser</td><td>Adam</td><td><code>demo_SpectralFormer.py:433</code></td></tr>
+        <tr><td>LR scheduler</td><td>StepLR (step = epochs/10)</td><td><code>demo_SpectralFormer.py:434</code></td></tr>
+        <tr><td>Loss</td><td>CrossEntropyLoss (class-weighted)</td><td><code>demo_SpectralFormer.py</code></td></tr>
+        <tr><td>Inference</td><td>Chunked (512 px/chunk)</td><td><code>predict_full_image_chunked()</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn-box">
+      <strong>Memory note:</strong> Full-scene inference for a 574×953 image requires
+      classifying 546,922 pixels. Pre-allocating the entire patch tensor at once would
+      require ~23.8 GiB. The <code>predict_full_image_chunked()</code> function in
+      <a href="../hsmodel/demo_SpectralFormer.py"><code>demo_SpectralFormer.py:149</code></a>
+      processes 512 pixels at a time (~3 MB peak), making inference feasible on any GPU.
+    </div>
+
+    <!-- Shared utilities -->
+    <h2><span class="accent">◆</span> Shared Utilities</h2>
+    <p>Both deep models use the same data loading, normalisation, and evaluation functions
+       from <a href="../hsmodel/utils.py"><code>hsmodel/utils.py</code></a>.</p>
+
+    <table>
+      <thead><tr><th>Function</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>load_HSI(args)</code></td>
+          <td>Loads stacked GeoTIFF + masks; applies nodata-aware per-band min–max normalisation.
+              Critical: excludes −9999 pixels from min/max to prevent spectral collapse.</td>
+        </tr>
+        <tr>
+          <td><code>chooose_train_and_test_point()</code></td>
+          <td>Reads train_mask/test_mask TIFs; returns per-class pixel coordinates and counts.</td>
+        </tr>
+        <tr>
+          <td><code>mirror_hsi()</code></td>
+          <td>Pads the image by <code>patch//2</code> on each side (mirror reflection)
+              so that border pixels can use the full 5×5 neighbourhood.</td>
+        </tr>
+        <tr>
+          <td><code>train_and_test_data()</code></td>
+          <td>Extracts 5×5 patches centred on each labelled pixel from the mirrored image.</td>
+        </tr>
+        <tr>
+          <td><code>train_epoch() / valid_epoch()</code></td>
+          <td>Single epoch training / evaluation loops shared by Mamba demo.</td>
+        </tr>
+        <tr>
+          <td><code>calculate_metrics()</code></td>
+          <td>Computes OA, AA, Kappa, and per-class accuracy from target/predicted arrays.</td>
+        </tr>
+        <tr>
+          <td><code>predict_whole_image()</code></td>
+          <td>Runs full-scene inference using the model; used by Mamba (SpectralFormer
+              uses its own chunked variant).</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div><!-- /page-body -->
+</div><!-- /content -->
+</div><!-- /layout -->
+<script src="js/wiki.js"></script>
+</body>
+</html>

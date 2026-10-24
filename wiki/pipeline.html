@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperLithoMap Wiki — Pipeline Workflow</title>
+<link rel="stylesheet" href="css/wiki.css">
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">HS</div>
+    <div class="brand-text">
+      <div class="brand-title">HyperLithoMap</div>
+      <div class="brand-sub">Hyperspectral Classification</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Home</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">⚡</span> Quick Start</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Science</div>
+    <a class="nav-link" href="science.html"><span class="nav-icon">🔬</span> Hyperspectral Imaging</a>
+    <a class="nav-link" href="science.html#geology"><span class="nav-icon">🪨</span> Geological Mapping</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Pipeline</div>
+    <a class="nav-link active" href="pipeline.html"><span class="nav-icon">🔄</span> Workflow Overview</a>
+    <a class="nav-link" href="pipeline.html#preprocessing"><span class="nav-icon">⚙️</span> Preprocessing Steps</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Models</div>
+    <a class="nav-link" href="models.html"><span class="nav-icon">📊</span> Model Comparison</a>
+    <a class="nav-link" href="models.html#rf"><span class="nav-icon">🌲</span> Random Forest</a>
+    <a class="nav-link" href="models.html#xgb"><span class="nav-icon">⚡</span> XGBoost</a>
+    <a class="nav-link" href="models.html#mamba"><span class="nav-icon">🧬</span> S²Mamba</a>
+    <a class="nav-link" href="models.html#vit"><span class="nav-icon">👁️</span> SpectralFormer</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a class="nav-link" href="configuration.html"><span class="nav-icon">🛠️</span> Configuration</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">📖</span> CLI &amp; API</a>
+  </div>
+
+  <div class="sidebar-footer">HyperLithoMap v1.0 &nbsp;·&nbsp; MIT License</div>
+</nav>
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<div class="content">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <button class="menu-toggle">☰</button>
+      <a href="index.html">Wiki</a>
+      <span class="sep">›</span>
+      <strong>Pipeline Workflow</strong>
+    </div>
+    <span class="topbar-tag">Pipeline</span>
+  </div>
+
+  <div class="page-body">
+
+    <h1>Pipeline Workflow</h1>
+    <p>The HyperLithoMap pipeline converts raw satellite sensor data into a fully classified
+       geological map through a deterministic five-step sequence. Each step is idempotent —
+       re-running the pipeline simply overwrites previous outputs without side effects.</p>
+
+    <!-- High-level flow SVG -->
+    <h2><span class="accent">◆</span> End-to-End Data Flow</h2>
+    <div class="diagram-wrap">
+      <svg width="780" height="340" viewBox="0 0 780 340" font-family="-apple-system,sans-serif">
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#94a3b8"/>
+          </marker>
+          <marker id="arrg" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0,8 3,0 6" fill="#34d399"/>
+          </marker>
+        </defs>
+
+        <!-- Step boxes -->
+        <!-- Step 1 -->
+        <rect x="10" y="20" width="138" height="90" rx="8" fill="#0d1b2a" stroke="#d4952a" stroke-width="1.5"/>
+        <text x="79" y="42" text-anchor="middle" fill="#d4952a" font-size="11" font-weight="700">STEP 1</text>
+        <text x="79" y="58" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Sensor → GeoTIFF</text>
+        <text x="79" y="72" text-anchor="middle" fill="#64748b" font-size="9">HDF5 / ENVI / GeoTIFF</text>
+        <text x="79" y="86" text-anchor="middle" fill="#64748b" font-size="9">→ float32 GeoTIFF</text>
+        <text x="79" y="100" text-anchor="middle" fill="#60a5fa" font-size="8">converth5totiff.py</text>
+
+        <line x1="148" y1="65" x2="162" y2="65" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 2 -->
+        <rect x="163" y="20" width="138" height="90" rx="8" fill="#0d1b2a" stroke="#d4952a" stroke-width="1.5"/>
+        <text x="232" y="42" text-anchor="middle" fill="#d4952a" font-size="11" font-weight="700">STEP 2</text>
+        <text x="232" y="58" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Rasterise Labels</text>
+        <text x="232" y="72" text-anchor="middle" fill="#64748b" font-size="9">Shapefile polygons</text>
+        <text x="232" y="86" text-anchor="middle" fill="#64748b" font-size="9">→ label raster</text>
+        <text x="232" y="100" text-anchor="middle" fill="#60a5fa" font-size="8">convertshapelabelstoraster.py</text>
+
+        <line x1="301" y1="65" x2="315" y2="65" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 3 -->
+        <rect x="316" y="20" width="138" height="90" rx="8" fill="#0d1b2a" stroke="#d4952a" stroke-width="1.5"/>
+        <text x="385" y="42" text-anchor="middle" fill="#d4952a" font-size="11" font-weight="700">STEP 3</text>
+        <text x="385" y="58" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Apply Colormap</text>
+        <text x="385" y="72" text-anchor="middle" fill="#64748b" font-size="9">plate.clr → RGB</text>
+        <text x="385" y="86" text-anchor="middle" fill="#64748b" font-size="9">visualisation raster</text>
+        <text x="385" y="100" text-anchor="middle" fill="#60a5fa" font-size="8">color_map.py</text>
+
+        <line x1="454" y1="65" x2="468" y2="65" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 4 -->
+        <rect x="469" y="20" width="138" height="90" rx="8" fill="#0d1b2a" stroke="#d4952a" stroke-width="1.5"/>
+        <text x="538" y="42" text-anchor="middle" fill="#d4952a" font-size="11" font-weight="700">STEP 4</text>
+        <text x="538" y="58" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Train/Test Split</text>
+        <text x="538" y="72" text-anchor="middle" fill="#64748b" font-size="9">Stratified pixel</text>
+        <text x="538" y="86" text-anchor="middle" fill="#64748b" font-size="9">sampling masks</text>
+        <text x="538" y="100" text-anchor="middle" fill="#60a5fa" font-size="8">split_pixel.py</text>
+
+        <line x1="607" y1="65" x2="621" y2="65" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- Step 5 -->
+        <rect x="622" y="20" width="148" height="90" rx="8" fill="#0d1b2a" stroke="#34d399" stroke-width="1.5"/>
+        <text x="696" y="42" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700">STEP 5</text>
+        <text x="696" y="58" text-anchor="middle" fill="#e2e8f0" font-size="10" font-weight="700">Train &amp; Predict</text>
+        <text x="696" y="72" text-anchor="middle" fill="#64748b" font-size="9">RF / XGB / Mamba</text>
+        <text x="696" y="86" text-anchor="middle" fill="#64748b" font-size="9">/ SpectralFormer</text>
+        <text x="696" y="100" text-anchor="middle" fill="#60a5fa" font-size="8">model_runner.py</text>
+
+        <!-- Inputs row -->
+        <text x="79" y="150" text-anchor="middle" fill="#94a3b8" font-size="9">INPUT</text>
+        <rect x="20" y="158" width="118" height="36" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="79" y="172" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="700">.he5 / .dat / .TIF</text>
+        <text x="79" y="184" text-anchor="middle" fill="#64748b" font-size="8">raw sensor file</text>
+
+        <text x="232" y="150" text-anchor="middle" fill="#94a3b8" font-size="9">INPUT</text>
+        <rect x="173" y="158" width="118" height="36" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="232" y="172" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="700">.shp + .dbf</text>
+        <text x="232" y="184" text-anchor="middle" fill="#64748b" font-size="8">training polygons</text>
+
+        <text x="385" y="150" text-anchor="middle" fill="#94a3b8" font-size="9">INPUT</text>
+        <rect x="326" y="158" width="118" height="36" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="385" y="172" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="700">plate.clr</text>
+        <text x="385" y="184" text-anchor="middle" fill="#64748b" font-size="8">colour table</text>
+
+        <!-- Outputs row -->
+        <text x="79" y="240" text-anchor="middle" fill="#94a3b8" font-size="9">OUTPUT</text>
+        <rect x="20" y="248" width="118" height="36" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="79" y="262" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">vnir_swir_stackedd.tif</text>
+        <text x="79" y="274" text-anchor="middle" fill="#64748b" font-size="8">234-band float32</text>
+
+        <text x="232" y="240" text-anchor="middle" fill="#94a3b8" font-size="9">OUTPUT</text>
+        <rect x="173" y="248" width="118" height="36" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="232" y="262" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">colored_class_labels.tif</text>
+        <text x="232" y="274" text-anchor="middle" fill="#64748b" font-size="8">integer class raster</text>
+
+        <text x="538" y="240" text-anchor="middle" fill="#94a3b8" font-size="9">OUTPUT</text>
+        <rect x="479" y="248" width="118" height="36" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="538" y="262" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">train_mask.tif</text>
+        <text x="538" y="274" text-anchor="middle" fill="#64748b" font-size="8">test_mask.tif</text>
+
+        <text x="696" y="240" text-anchor="middle" fill="#94a3b8" font-size="9">OUTPUT</text>
+        <rect x="632" y="248" width="128" height="36" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="696" y="262" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">*_prediction_map.tif</text>
+        <text x="696" y="274" text-anchor="middle" fill="#64748b" font-size="8">GeoTIFF + figures/</text>
+
+        <!-- Connector lines from steps to outputs -->
+        <line x1="79"  y1="110" x2="79"  y2="158" stroke="#243447" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="232" y1="110" x2="232" y2="158" stroke="#243447" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="79"  y1="110" x2="79"  y2="248" stroke="#243447" stroke-width="1" stroke-dasharray="3,3" opacity="0.3"/>
+        <line x1="232" y1="110" x2="232" y2="248" stroke="#243447" stroke-width="1" stroke-dasharray="3,3" opacity="0.3"/>
+        <line x1="538" y1="110" x2="538" y2="248" stroke="#243447" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="696" y1="110" x2="696" y2="248" stroke="#243447" stroke-width="1" stroke-dasharray="3,3"/>
+
+        <!-- Orchestrator label -->
+        <rect x="10" y="305" width="760" height="28" rx="5" fill="#162032" stroke="#243447"/>
+        <text x="390" y="324" text-anchor="middle" fill="#94a3b8" font-size="10">
+          Orchestrator: <tspan fill="#60a5fa">src/pipeline.py</tspan>
+          · <tspan fill="#60a5fa">HyperspectralPipeline.run_preprocessing()</tspan>
+          · Steps 5 dispatched via <tspan fill="#60a5fa">src/model_runner.py</tspan>
+        </text>
+      </svg>
+    </div>
+    <p class="diagram-caption">Five-step pipeline from raw sensor file to classified geological map.
+       Steps 1–4 are preprocessing; Step 5 runs four ML models in sequence.</p>
+
+    <!-- Step details -->
+    <h2 id="preprocessing"><span class="accent">◆</span> Step Details</h2>
+
+    <!-- Step 1 -->
+    <div class="step-block">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Sensor Conversion → Stacked GeoTIFF</h3>
+        <p>Raw Level-2 data from three sensors is normalised to a common float32 GeoTIFF
+           format with a <code>−9999</code> nodata value. Bad spectral bands (atmospheric
+           absorption windows, sensor artefacts) are removed at this stage.</p>
+
+        <div class="info-box">
+          <strong>Code:</strong>
+          <a href="../preprocessing/converth5totiff.py"><code>preprocessing/converth5totiff.py</code></a>
+          — functions <code>convert_h5_to_stacked_tiff()</code>,
+          <code>convert_enmap_to_stacked_tiff()</code>,
+          <code>convert_dat_to_stacked_tiff()</code>
+        </div>
+
+        <table>
+          <thead><tr><th>Sensor</th><th>Raw format</th><th>Function</th><th>Bands kept</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>PRISMA HDF5</td>
+              <td><code>.he5</code> (HDF5, SWIR + VNIR cubes)</td>
+              <td><code>convert_h5_to_stacked_tiff()</code></td>
+              <td>234 (removes 5 VNIR edge + 76 SWIR water/thermal bands)</td>
+            </tr>
+            <tr>
+              <td>EnMap GeoTIFF</td>
+              <td><code>.TIF</code> (multi-band GeoTIFF)</td>
+              <td><code>convert_enmap_to_stacked_tiff()</code></td>
+              <td>219 (removes 5 overlap bands 131–135)</td>
+            </tr>
+            <tr>
+              <td>PRISMA ENVI</td>
+              <td><code>.dat + .hdr</code> (ENVI BSQ)</td>
+              <td><code>convert_dat_to_stacked_tiff()</code></td>
+              <td>234 (no bad-band list for Rabshi scene)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <pre><span class="cmt"># PRISMA bad-band lists in config.py</span>
+vnir_bands_to_remove = [1, 2, 3, 4, 5]                              <span class="cmt"># edge artefacts</span>
+swir_bands_to_remove = list(range(3,6))   +                         <span class="cmt"># VNIR-SWIR gap</span>
+                       list(range(40,57)) +                         <span class="cmt"># 1350–1450 nm H₂O</span>
+                       list(range(86,112))+                         <span class="cmt"># 1800–1950 nm H₂O</span>
+                       list(range(152,172))                         <span class="cmt"># 2450–2500 nm</span></pre>
+
+        <div class="warn-box">
+          <strong>Nodata convention:</strong> All conversions write <code>nodata=−9999</code>.
+          Subsequent steps must mask these pixels before any arithmetic. The
+          normalisation in <a href="../hsmodel/utils.py"><code>hsmodel/utils.py :: load_HSI()</code></a>
+          excludes nodata from per-band min/max — including nodata in normalisation
+          collapses all valid reflectance to ≈1.0 and destroys spectral variance.
+        </div>
+
+        <h4>Output</h4>
+        <p><code>&lt;intermediate_dir&gt;/vnir_swir_stackedd.tif</code> — float32 GeoTIFF,
+           N bands × H × W, UTM coordinate reference system, nodata = −9999.</p>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-block">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Rasterise Training Labels</h3>
+        <p>Geological field-survey polygons (shapefile) are burned onto a raster grid
+           co-registered pixel-for-pixel with the stacked GeoTIFF. The class integer
+           values are read from the attribute column configured per-satellite in
+           <code>config.class_field</code>.</p>
+
+        <div class="info-box">
+          <strong>Code:</strong>
+          <a href="../preprocessing/convertshapelabelstoraster.py"><code>preprocessing/convertshapelabelstoraster.py</code></a>
+          &nbsp;·&nbsp; called by
+          <a href="../src/pipeline.py"><code>src/pipeline.py :: _step_process_labels()</code></a>
+        </div>
+
+        <table>
+          <thead><tr><th>Satellite</th><th>Shapefile column</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>PRISMA (Aboresheed)</td><td><code>Classcode</code></td><td>Integer codes 1–8</td></tr>
+            <tr><td>EnMap (Aboresheed)</td><td><code>Classcode</code></td><td>Same polygon set</td></tr>
+            <tr><td>RabshiPRISMA</td><td><code>Classvalue</code></td><td><code>Classcode</code> column is null</td></tr>
+          </tbody>
+        </table>
+
+        <h4>Output</h4>
+        <p><code>&lt;intermediate_dir&gt;/colored_class_labels.tif</code> — single-band integer
+           raster. Background (unlabelled) pixels = 0. Class pixels = 1 … N.</p>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-block">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Apply Colour Table</h3>
+        <p>Assigns a human-interpretable RGB palette to the integer label raster for
+           QGIS/ArcGIS inspection. This step does not alter any model inputs.</p>
+
+        <div class="info-box">
+          <strong>Code:</strong>
+          <a href="../preprocessing/color_map.py"><code>preprocessing/color_map.py</code></a>
+          &nbsp;·&nbsp; called by
+          <a href="../src/pipeline.py"><code>src/pipeline.py :: _step_apply_colormap()</code></a>
+        </div>
+
+        <p>The colour table is a plain-text <code>.clr</code> file with columns
+           <code>value R G B alpha label</code>.  Example from
+           <code>data/RabshimamabadataPrisma/input/plate.clr</code>:</p>
+        <pre>1  130  80  50  255  Hornfels
+2   60 100 200  255  Limestone
+3  200 160  60  255  Mudstone-siltstone
+...</pre>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-block">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Stratified Train / Test Split</h3>
+        <p>Randomly samples <code>config.samples</code> pixels per class from the
+           label raster, then splits them into a training mask
+           (<code>1 − test_size</code>) and a test mask (<code>test_size</code>)
+           using stratified sampling to preserve class proportions.</p>
+
+        <div class="info-box">
+          <strong>Code:</strong>
+          <a href="../preprocessing/split_pixel.py"><code>preprocessing/split_pixel.py</code></a>
+          &nbsp;·&nbsp; called by
+          <a href="../src/pipeline.py"><code>src/pipeline.py :: _step_create_masks()</code></a>
+        </div>
+
+        <table>
+          <thead><tr><th>Parameter</th><th>Config key</th><th>Default</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td>Pixels per class</td><td><code>config.samples</code></td><td>1000</td><td>Total labelled pool per class</td></tr>
+            <tr><td>Test fraction</td><td><code>config.test_size</code></td><td>0.70</td><td>70 % held out for evaluation</td></tr>
+          </tbody>
+        </table>
+
+        <h4>Outputs</h4>
+        <ul>
+          <li><code>intermediate/train_mask.tif</code> — binary raster, 1 = training pixel</li>
+          <li><code>intermediate/test_mask.tif</code> — binary raster, 1 = test pixel</li>
+        </ul>
+
+        <div class="warn-box">
+          <strong>Spatial autocorrelation:</strong> Purely random pixel sampling does not
+          enforce spatial separation. Pixels from the same polygon can appear in both
+          train and test sets. For rigorous validation, replace the polygon-level split
+          in <code>split_pixel.py</code> with a block-holdout scheme.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-block">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>Train Models &amp; Generate Prediction Maps</h3>
+        <p>All four models share the same training/test masks but operate independently.
+           Each model loads the stacked GeoTIFF, applies nodata-aware normalisation,
+           fits on training pixels, evaluates on test pixels, and writes a full-scene
+           prediction GeoTIFF.</p>
+
+        <div class="info-box">
+          <strong>Dispatcher:</strong>
+          <a href="../src/model_runner.py"><code>src/model_runner.py :: ModelRunner.run_multiple_models()</code></a>
+          &nbsp;→&nbsp; delegates to individual demo files in <a href="../hsmodel/"><code>hsmodel/</code></a>
+        </div>
+
+        <table>
+          <thead><tr><th>Model</th><th>Demo file</th><th>Output TIF</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Random Forest</td>
+              <td><a href="../hsmodel/demo_RandomForests.py"><code>demo_RandomForests.py</code></a></td>
+              <td><code>rf_final_prediction_map.tif</code></td>
+            </tr>
+            <tr>
+              <td>XGBoost</td>
+              <td><a href="../hsmodel/demo_eXtremeGradientBoosting.py"><code>demo_eXtremeGradientBoosting.py</code></a></td>
+              <td><code>xgb_final_prediction_map.tif</code></td>
+            </tr>
+            <tr>
+              <td>S²Mamba</td>
+              <td><a href="../hsmodel/demo_mambaStateSpaceModel.py"><code>demo_mambaStateSpaceModel.py</code></a></td>
+              <td><code>MAMBA_final_prediction_map.tif</code></td>
+            </tr>
+            <tr>
+              <td>SpectralFormer</td>
+              <td><a href="../hsmodel/demo_SpectralFormer.py"><code>demo_SpectralFormer.py</code></a></td>
+              <td><code>VIT_final_prediction_map.tif</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>After all models complete, convert prediction maps to
+           publication-quality PNG figures:</p>
+        <pre>python -m preprocessing.export_figures --dataset RabshiPRISMA</pre>
+        <p>Figures are saved in <code>output/experiments_XXX/figures/</code> as
+           individual 300 DPI PNGs with scale bar, north arrow, legend, and a 2×2
+           comparison panel.</p>
+      </div>
+    </div>
+
+    <!-- Orchestration -->
+    <h2><span class="accent">◆</span> Orchestration Layer</h2>
+    <p>The entry point for all pipeline execution is
+      <a href="../src/pipeline.py"><code>src/pipeline.py</code></a> and
+      <a href="../src/model_runner.py"><code>src/model_runner.py</code></a>,
+      both instantiated by <a href="../main.py"><code>main.py</code></a>.</p>
+
+    <pre><span class="cmt"># src/pipeline.py — simplified call graph</span>
+HyperspectralPipeline.run_preprocessing()
+  ├── _step_convert_satellite_data()   <span class="cmt"># Step 1</span>
+  ├── _step_process_labels()           <span class="cmt"># Step 2</span>
+  ├── _step_apply_colormap()           <span class="cmt"># Step 3</span>
+  └── _step_create_masks()             <span class="cmt"># Step 4</span>
+
+ModelRunner.run_multiple_models([RF, XGB, MAMBA, VIT], all_classes)
+  ├── run_random_forests()             <span class="cmt"># Step 5a</span>
+  ├── run_xgboost()                    <span class="cmt"># Step 5b</span>
+  ├── run_mamba()                      <span class="cmt"># Step 5c</span>
+  └── run_spectral_former()            <span class="cmt"># Step 5d</span></pre>
+
+    <div class="info-box">
+      <strong>Config singleton:</strong> All pipeline classes import the module-level
+      <code>config</code> object from
+      <a href="../projutils/config.py"><code>projutils/config.py</code></a>.
+      When <code>Config(satellite_name=...)</code> is constructed,
+      <code>_create_required_dirs()</code> automatically creates every intermediate
+      and output directory listed in the config — no manual directory setup needed.
+    </div>
+
+  </div><!-- /page-body -->
+</div><!-- /content -->
+</div><!-- /layout -->
+<script src="js/wiki.js"></script>
+</body>
+</html>

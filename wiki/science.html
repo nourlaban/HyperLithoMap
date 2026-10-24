@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scientific Background | HyperLithoMap Wiki</title>
+<link rel="stylesheet" href="css/wiki.css">
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">HS</div>
+    <div class="brand-text"><div class="brand-title">HyperLithoMap</div><div class="brand-sub">Hyperspectral Classification</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Home</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">⚡</span> Quick Start</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Science</div>
+    <a class="nav-link" href="science.html"><span class="nav-icon">🔬</span> Hyperspectral Imaging</a>
+    <a class="nav-link" href="science.html#geology"><span class="nav-icon">🪨</span> Geological Mapping</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Pipeline</div>
+    <a class="nav-link" href="pipeline.html"><span class="nav-icon">🔄</span> Workflow Overview</a>
+    <a class="nav-link" href="pipeline.html#preprocessing"><span class="nav-icon">⚙️</span> Preprocessing Steps</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Models</div>
+    <a class="nav-link" href="models.html"><span class="nav-icon">📊</span> Model Comparison</a>
+    <a class="nav-link" href="models.html#rf"><span class="nav-icon">🌲</span> Random Forest</a>
+    <a class="nav-link" href="models.html#xgb"><span class="nav-icon">⚡</span> XGBoost</a>
+    <a class="nav-link" href="models.html#mamba"><span class="nav-icon">🧬</span> S²Mamba</a>
+    <a class="nav-link" href="models.html#vit"><span class="nav-icon">👁️</span> SpectralFormer</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a class="nav-link" href="configuration.html"><span class="nav-icon">🛠️</span> Configuration</a>
+    <a class="nav-link" href="usage.html"><span class="nav-icon">📖</span> CLI &amp; API</a>
+  </div>
+  <div class="sidebar-footer">HyperLithoMap v1.0 · MIT License</div>
+</nav>
+
+<div class="content">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <button class="menu-toggle">☰</button>
+      <a href="index.html">Wiki</a> <span>›</span> <strong>Scientific Background</strong>
+    </div>
+    <span class="topbar-tag">Science</span>
+  </div>
+
+  <div class="page-body">
+    <h1>Scientific Background</h1>
+    <p>This page explains the physical principles behind hyperspectral remote sensing and its
+       application to geological mapping — the scientific foundation of every step in the HyperLithoMap pipeline.</p>
+
+    <!-- ── What is Hyperspectral Imaging ── -->
+    <h2 id="hsi"><span class="accent">◆</span> What is Hyperspectral Imaging?</h2>
+    <p>Conventional colour cameras record three broad bands (red, green, blue). Multispectral
+       sensors extend this to 4–12 bands. <strong>Hyperspectral sensors</strong> record hundreds of
+       narrow, contiguous spectral bands across the entire optical range — typically 400–2500 nm —
+       effectively delivering a <em>full spectrum</em> at every pixel of the image.</p>
+
+    <!-- Electromagnetic spectrum diagram -->
+    <div class="diagram-wrap">
+      <svg width="720" height="130" viewBox="0 0 720 130" font-family="-apple-system,sans-serif">
+        <!-- Spectrum bar -->
+        <defs>
+          <linearGradient id="spec" x1="0" x2="1">
+            <stop offset="0%"   stop-color="#6600cc"/>
+            <stop offset="15%"  stop-color="#3333ff"/>
+            <stop offset="30%"  stop-color="#00aaff"/>
+            <stop offset="45%"  stop-color="#00cc44"/>
+            <stop offset="55%"  stop-color="#aacc00"/>
+            <stop offset="65%"  stop-color="#ffcc00"/>
+            <stop offset="75%"  stop-color="#ff6600"/>
+            <stop offset="90%"  stop-color="#cc0000"/>
+            <stop offset="100%" stop-color="#880000"/>
+          </linearGradient>
+        </defs>
+        <rect x="20" y="30" width="680" height="30" rx="4" fill="url(#spec)"/>
+        <!-- Region labels -->
+        <text x="55"  y="22" text-anchor="middle" fill="#8b5cf6" font-size="9" font-weight="700">UV</text>
+        <text x="130" y="22" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="700">Visible (VIS)</text>
+        <text x="280" y="22" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="700">Near-IR (NIR)</text>
+        <text x="460" y="22" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="700">Short-wave IR (SWIR)</text>
+        <!-- Tick lines -->
+        <line x1="20"  y1="60" x2="20"  y2="72" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="176" y1="60" x2="176" y2="72" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="292" y1="60" x2="292" y2="72" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="390" y1="60" x2="390" y2="72" stroke="#94a3b8" stroke-width="1"/>
+        <line x1="700" y1="60" x2="700" y2="72" stroke="#94a3b8" stroke-width="1"/>
+        <!-- Wavelength labels -->
+        <text x="20"  y="83" text-anchor="middle" fill="#94a3b8" font-size="8">400 nm</text>
+        <text x="176" y="83" text-anchor="middle" fill="#94a3b8" font-size="8">700 nm</text>
+        <text x="292" y="83" text-anchor="middle" fill="#94a3b8" font-size="8">1000 nm</text>
+        <text x="390" y="83" text-anchor="middle" fill="#94a3b8" font-size="8">1300 nm</text>
+        <text x="700" y="83" text-anchor="middle" fill="#94a3b8" font-size="8">2500 nm</text>
+        <!-- PRISMA coverage bracket -->
+        <line x1="20"  y1="96" x2="700" y2="96" stroke="#d4952a" stroke-width="2"/>
+        <line x1="20"  y1="90" x2="20"  y2="102" stroke="#d4952a" stroke-width="2"/>
+        <line x1="700" y1="90" x2="700" y2="102" stroke="#d4952a" stroke-width="2"/>
+        <text x="360" y="112" text-anchor="middle" fill="#d4952a" font-size="9" font-weight="700">PRISMA / EnMap coverage (400–2500 nm)</text>
+      </svg>
+    </div>
+    <p class="diagram-caption">The electromagnetic spectrum showing the PRISMA and EnMap sensor coverage (400–2500 nm).</p>
+
+    <div class="box box-info">
+      <strong>Key advantage:</strong> The 234 bands in PRISMA data give a spectral resolution of ~8–10 nm per band.
+      This resolves fine absorption features (widths of 20–80 nm) that are diagnostic of specific minerals —
+      features that are completely smeared out in Landsat or Sentinel-2 multispectral data.
+    </div>
+
+    <!-- Comparison table -->
+    <h2 id="comparison"><span class="accent">◆</span> Sensor Comparison</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Property</th><th>RGB Camera</th><th>Sentinel-2 (MSI)</th><th>PRISMA</th><th>EnMap</th></tr></thead>
+        <tbody>
+          <tr><td>Spectral bands</td><td>3</td><td>13</td><td>~234</td><td>~224</td></tr>
+          <tr><td>Spectral range</td><td>400–700 nm</td><td>443–2190 nm</td><td>400–2500 nm</td><td>420–2450 nm</td></tr>
+          <tr><td>Band width</td><td>~100 nm</td><td>15–180 nm</td><td>~8–10 nm</td><td>~6–10 nm</td></tr>
+          <tr><td>Spatial resolution</td><td>varies</td><td>10–60 m</td><td>30 m</td><td>30 m</td></tr>
+          <tr><td>Mineral discrimination</td><td>❌ None</td><td>⚠️ Limited</td><td>✅ High</td><td>✅ High</td></tr>
+          <tr><td>Alteration mapping</td><td>❌</td><td>⚠️ Rough index</td><td>✅ Full</td><td>✅ Full</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Spectral Signatures ── -->
+    <h2 id="signatures"><span class="accent">◆</span> Spectral Signatures of Geological Materials</h2>
+    <p>Every mineral absorbs electromagnetic radiation at wavelengths determined by the electronic
+       and vibrational properties of its crystal structure. These absorption features produce
+       characteristic dips in the reflectance spectrum — the mineral's <strong>spectral fingerprint</strong>.</p>
+
+    <!-- Simplified spectral curve diagram -->
+    <div class="diagram-wrap">
+      <svg width="680" height="220" viewBox="0 0 680 220" font-family="-apple-system,sans-serif">
+        <!-- Axes -->
+        <line x1="55" y1="10" x2="55" y2="175" stroke="#475569" stroke-width="1.5"/>
+        <line x1="55" y1="175" x2="660" y2="175" stroke="#475569" stroke-width="1.5"/>
+        <!-- Y label -->
+        <text x="12" y="95" transform="rotate(-90,12,95)" text-anchor="middle" fill="#94a3b8" font-size="9">Reflectance (%)</text>
+        <!-- X label -->
+        <text x="357" y="200" text-anchor="middle" fill="#94a3b8" font-size="9">Wavelength (nm)</text>
+        <!-- X ticks -->
+        <text x="55"  y="188" text-anchor="middle" fill="#94a3b8" font-size="8">400</text>
+        <text x="168" y="188" text-anchor="middle" fill="#94a3b8" font-size="8">700</text>
+        <text x="282" y="188" text-anchor="middle" fill="#94a3b8" font-size="8">1000</text>
+        <text x="395" y="188" text-anchor="middle" fill="#94a3b8" font-size="8">1300</text>
+        <text x="508" y="188" text-anchor="middle" fill="#94a3b8" font-size="8">1800</text>
+        <text x="660" y="188" text-anchor="middle" fill="#94a3b8" font-size="8">2500</text>
+        <!-- Y ticks -->
+        <text x="48" y="172" text-anchor="end" fill="#94a3b8" font-size="8">0</text>
+        <text x="48" y="140" text-anchor="end" fill="#94a3b8" font-size="8">20</text>
+        <text x="48" y="108" text-anchor="end" fill="#94a3b8" font-size="8">40</text>
+        <text x="48" y="76" text-anchor="end" fill="#94a3b8" font-size="8">60</text>
+        <text x="48" y="44" text-anchor="end" fill="#94a3b8" font-size="8">80</text>
+        <!-- Grid lines -->
+        <line x1="55" y1="140" x2="660" y2="140" stroke="#e2e8f0" stroke-width="0.5" stroke-dasharray="3,3"/>
+        <line x1="55" y1="108" x2="660" y2="108" stroke="#e2e8f0" stroke-width="0.5" stroke-dasharray="3,3"/>
+        <line x1="55" y1="76"  x2="660" y2="76"  stroke="#e2e8f0" stroke-width="0.5" stroke-dasharray="3,3"/>
+        <!-- Curve 1: Granite (salmon/pink — high reflectance, smooth) -->
+        <polyline points="55,155 90,145 130,132 170,122 210,115 250,110 290,108 330,110 370,105 400,90 430,80 460,80 490,78 520,88 540,82 560,88 580,80 600,84 620,80 640,82 660,80"
+                  fill="none" stroke="#ff9b82" stroke-width="2"/>
+        <!-- Curve 2: Mafic (dark green — lower, absorption at 1000nm) -->
+        <polyline points="55,162 90,158 130,148 170,142 210,148 250,155 282,158 290,160 300,158 310,152 330,148 360,148 390,145 420,140 450,138 480,138 500,145 510,152 520,148 540,145 560,140 580,142 600,140 640,138 660,138"
+                  fill="none" stroke="#4ade80" stroke-width="2"/>
+        <!-- Curve 3: Alteration/Clay (yellow — OH feature at 2200nm) -->
+        <polyline points="55,155 100,145 150,132 200,118 250,110 300,105 350,100 395,95 430,90 450,88 470,85 490,88 510,92 530,85 550,78 570,72 590,90 610,115 630,105 650,100 660,98"
+                  fill="none" stroke="#facc15" stroke-width="2"/>
+        <!-- Curve 4: Serpentinite (olive) -->
+        <polyline points="55,160 100,155 150,148 200,142 250,138 300,138 350,140 400,142 430,138 460,130 480,128 500,132 520,138 540,145 560,148 580,152 600,148 630,145 650,148 660,145"
+                  fill="none" stroke="#84cc16" stroke-width="2"/>
+        <!-- Absorption feature annotations -->
+        <line x1="282" y1="100" x2="282" y2="162" stroke="#4ade80" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <text x="282" y="95" text-anchor="middle" fill="#4ade80" font-size="7">Fe²⁺ 1000nm</text>
+        <line x1="580" y1="45" x2="580" y2="175" stroke="#facc15" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <text x="580" y="40" text-anchor="middle" fill="#facc15" font-size="7">Al-OH 2200nm</text>
+        <!-- Legend -->
+        <rect x="58" y="14" width="280" height="52" rx="4" fill="rgba(255,255,255,0.9)" stroke="#e2e8f0"/>
+        <line x1="66" y1="28" x2="86" y2="28" stroke="#ff9b82" stroke-width="2"/>
+        <text x="90" y="31" fill="#475569" font-size="8">Atalla Granites (felsic)</text>
+        <line x1="66" y1="41" x2="86" y2="41" stroke="#4ade80" stroke-width="2"/>
+        <text x="90" y="44" fill="#475569" font-size="8">Basic Metavolcanics (mafic)</text>
+        <line x1="66" y1="54" x2="86" y2="54" stroke="#facc15" stroke-width="2"/>
+        <text x="90" y="57" fill="#475569" font-size="8">Alteration Zones (clay minerals)</text>
+        <line x1="175" y1="54" x2="195" y2="54" stroke="#84cc16" stroke-width="2"/>
+        <text x="199" y="57" fill="#475569" font-size="8">Serpentinite</text>
+      </svg>
+    </div>
+    <p class="diagram-caption">Schematic reflectance spectra for four Rabshi geological units.
+       Note the Fe²⁺ absorption near 1000 nm in mafic rocks and the Al–OH absorption near 2200 nm in alteration zones.</p>
+
+    <!-- ── Geology Section ── -->
+    <h2 id="geology"><span class="accent">◆</span> Geological Mapping Applications</h2>
+    <p>The eight classes mapped in the Rabshi PRISMA dataset illustrate the full range of applications:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Class</th><th>Geological Significance</th><th>Key Spectral Feature</th><th>Exploration Relevance</th></tr></thead>
+        <tbody>
+          <tr><td>Acidic Metavolcanics</td><td>Felsic volcanic arc rocks, high SiO₂</td><td>High VNIR reflectance, flat SWIR</td><td>Host to epithermal Au–Ag</td></tr>
+          <tr><td>Alteration Zones</td><td>Hydrothermal clay/iron-oxide alteration</td><td>Al–OH at 2200 nm, Fe³⁺ at 900 nm</td><td>Direct indicator of mineralisation pathways</td></tr>
+          <tr><td>Atalla Granites</td><td>Post-collisional felsic intrusives</td><td>Smooth, high reflectance</td><td>Associated with pegmatite/REE deposits</td></tr>
+          <tr><td>Basic Metavolcanics</td><td>Mafic volcanic arc basalts</td><td>Fe²⁺ absorption at ~1000 nm</td><td>Ni–Cu–PGE potential</td></tr>
+          <tr><td>Meatiq Granites</td><td>Basement gneissic granites</td><td>Similar to Atalla, slight texture differences</td><td>Structural windows into deep crust</td></tr>
+          <tr><td>Metagabbro-Diorite</td><td>Intrusive mafic to intermediate</td><td>Broad Fe absorption, low SWIR</td><td>Cr–Ni deposits</td></tr>
+          <tr><td>Serpentinite</td><td>Ultramafic, ophiolite remnant</td><td>Mg–OH at 2320 nm, low overall reflectance</td><td>Ni laterite, asbestos, chromite</td></tr>
+          <tr><td>Wadi Deposits</td><td>Alluvial sediment, valley fill</td><td>Mixed soil spectra, no sharp features</td><td>Placer mineral sampling targets</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Why ML for HSI ── -->
+    <h2 id="ml-challenge"><span class="accent">◆</span> The Machine-Learning Challenge</h2>
+    <p>Classifying hyperspectral data is harder than conventional image classification for four reasons:</p>
+    <ul>
+      <li><strong>High dimensionality (Hughes Phenomenon):</strong> With 234 bands and only hundreds of training samples per class, classical distance-based methods become unreliable. Dimensionality reduction (implicit in deep models) or regularised classifiers (RF, XGB) are required.</li>
+      <li><strong>Spatial–spectral coupling:</strong> Adjacent pixels of the same rock type share spectral similarity AND spatial texture. Models that process both jointly (S²Mamba, SpectralFormer) outperform purely spectral approaches.</li>
+      <li><strong>Mixed pixels:</strong> At 30 m resolution, a pixel near a geological contact contains contributions from multiple units. Spatial context helps resolve these ambiguous pixels.</li>
+      <li><strong>Label scarcity:</strong> Field mapping is expensive; training sets are small relative to image size. Class-weighted loss and regularisation are essential.</li>
+    </ul>
+    <div class="box box-warn">
+      <strong>Critical implementation note:</strong> The PRISMA Rabshi scene contains ~11% nodata pixels (value −9999)
+      at image boundaries. These must be excluded from per-band min–max normalisation — otherwise all valid
+      spectral values compress to ~1.0, erasing inter-class discrimination and causing model collapse.
+      See <span class="file-chip">hsmodel/utils.py</span> <code>load_HSI()</code> for the fix.
+    </div>
+
+    <!-- Sensors -->
+    <h2 id="sensors"><span class="accent">◆</span> Sensor Specifications</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Specification</th><th>PRISMA (ASI)</th><th>EnMap (DLR)</th></tr></thead>
+        <tbody>
+          <tr><td>Launch year</td><td>2019</td><td>2022</td></tr>
+          <tr><td>VNIR range</td><td>400–1010 nm (66 bands)</td><td>420–1000 nm (88 bands)</td></tr>
+          <tr><td>SWIR range</td><td>920–2505 nm (173 bands)</td><td>900–2450 nm (136 bands)</td></tr>
+          <tr><td>Total bands (raw)</td><td>239</td><td>224</td></tr>
+          <tr><td>After bad-band removal</td><td>~234</td><td>~219</td></tr>
+          <tr><td>Ground sampling distance</td><td>30 m</td><td>30 m</td></tr>
+          <tr><td>Swath width</td><td>30 km</td><td>30 km</td></tr>
+          <tr><td>Data format (L2D/L2A)</td><td>HDF5 (.he5)</td><td>GeoTIFF (.tif)</td></tr>
+          <tr><td>CRS (typical Middle East)</td><td>UTM Zone 36N (EPSG:32636)</td><td>UTM Zone 36N</td></tr>
+          <tr><td>Access</td><td>prisma.asi.it (free)</td><td>eoweb.dlr.de (free)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+</div>
+<script src="js/wiki.js"></script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperLithoMap Wiki — Quick Start &amp; CLI</title>
+<link rel="stylesheet" href="css/wiki.css">
+</head>
+<body>
+<div class="layout">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">HS</div>
+    <div class="brand-text">
+      <div class="brand-title">HyperLithoMap</div>
+      <div class="brand-sub">Hyperspectral Classification</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <a class="nav-link" href="index.html"><span class="nav-icon">🏠</span> Home</a>
+    <a class="nav-link active" href="usage.html"><span class="nav-icon">⚡</span> Quick Start</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Science</div>
+    <a class="nav-link" href="science.html"><span class="nav-icon">🔬</span> Hyperspectral Imaging</a>
+    <a class="nav-link" href="science.html#geology"><span class="nav-icon">🪨</span> Geological Mapping</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Pipeline</div>
+    <a class="nav-link" href="pipeline.html"><span class="nav-icon">🔄</span> Workflow Overview</a>
+    <a class="nav-link" href="pipeline.html#preprocessing"><span class="nav-icon">⚙️</span> Preprocessing Steps</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Models</div>
+    <a class="nav-link" href="models.html"><span class="nav-icon">📊</span> Model Comparison</a>
+    <a class="nav-link" href="models.html#rf"><span class="nav-icon">🌲</span> Random Forest</a>
+    <a class="nav-link" href="models.html#xgb"><span class="nav-icon">⚡</span> XGBoost</a>
+    <a class="nav-link" href="models.html#mamba"><span class="nav-icon">🧬</span> S²Mamba</a>
+    <a class="nav-link" href="models.html#vit"><span class="nav-icon">👁️</span> SpectralFormer</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <a class="nav-link" href="configuration.html"><span class="nav-icon">🛠️</span> Configuration</a>
+    <a class="nav-link active" href="usage.html"><span class="nav-icon">📖</span> CLI &amp; API</a>
+  </div>
+
+  <div class="sidebar-footer">HyperLithoMap v1.0 &nbsp;·&nbsp; MIT License</div>
+</nav>
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<div class="content">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <button class="menu-toggle">☰</button>
+      <a href="index.html">Wiki</a>
+      <span class="sep">›</span>
+      <strong>Quick Start &amp; CLI</strong>
+    </div>
+    <span class="topbar-tag">Reference</span>
+  </div>
+
+  <div class="page-body">
+
+    <h1>Quick Start &amp; CLI Reference</h1>
+    <p>Everything you need to go from raw satellite data to published geological maps
+       in a single command, plus the complete Python API for scripted workflows.</p>
+
+    <!-- Installation -->
+    <h2><span class="accent">◆</span> Installation</h2>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div>
+          <strong>Clone the repository</strong>
+          <pre>git clone https://github.com/nourlaban/HyperLithoMap.git
+cd HyperLithoMap</pre>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div>
+          <strong>Create a Python environment</strong>
+          <pre>conda create -n pbhsdl python=3.10 -y
+conda activate pbhsdl</pre>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div>
+          <strong>Install dependencies</strong>
+          <pre>pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+pip install rasterio numpy scipy scikit-learn matplotlib
+pip install xgboost einops causal-conv1d mamba-ssm</pre>
+          <p>Requires CUDA 11.8+ for S²Mamba and SpectralFormer GPU training.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <div>
+          <strong>Place your data</strong>
+          <pre>data/
+└── RabshimamabadataPrisma/
+    └── input/
+        ├── PRISMA_Rabshi_clip.dat
+        ├── PRISMA_Rabshi_clip.hdr
+        ├── plate.clr
+        └── PRISMA_Rabshi_dataset/
+            └── Rabshi_PRISMA.shp  (+ .dbf, .prj, .shx)</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick start -->
+    <h2><span class="accent">◆</span> Fastest Path: One Command</h2>
+    <pre><span class="cmt"># Run the complete pipeline: convert → label → split → train all 4 models</span>
+python main.py run-all --dataset RabshiPRISMA --verbose
+
+<span class="cmt"># Export publication figures from the finished prediction maps</span>
+python -m preprocessing.export_figures --dataset RabshiPRISMA --dpi 300 --bar-km 5</pre>
+
+    <div class="info-box">
+      <strong>Expected runtime:</strong> preprocessing ≈ 2 min · RF/XGB ≈ 5 min ·
+      S²Mamba 200 epochs ≈ 25 min · SpectralFormer 200 epochs ≈ 35 min (NVIDIA RTX 3090).
+    </div>
+
+    <!-- CLI reference -->
+    <h2><span class="accent">◆</span> CLI Reference</h2>
+
+    <h3>Global flags</h3>
+    <table>
+      <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>--dataset</code></td><td><code>PRISMA</code></td>
+            <td>Which dataset config to load: <code>PRISMA</code> | <code>EnMap</code> | <code>RabshiPRISMA</code></td></tr>
+        <tr><td><code>--verbose / -v</code></td><td>off</td><td>Enable INFO-level logging to console and log file</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Subcommands</h3>
+
+    <h4><code>preprocess</code> — run Steps 1–4 only</h4>
+    <pre>python main.py preprocess --dataset PRISMA --verbose</pre>
+    <p>Converts raw satellite data, rasterises labels, applies colour table, and
+       generates train/test masks. Useful when iterating on label shapefiles without
+       re-training models.</p>
+
+    <h4><code>train</code> — run Step 5 on pre-existing masks</h4>
+    <pre><span class="cmt"># Default: mamba + spectral_former</span>
+python main.py train --dataset EnMap --skip-preprocessing
+
+<span class="cmt"># Specify individual models</span>
+python main.py train --dataset PRISMA --models random_forests xgboost</pre>
+
+    <table>
+      <thead><tr><th>Flag</th><th>Choices</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><code>--models / -m</code></td>
+            <td><code>random_forests xgboost mamba spectral_former</code></td>
+            <td><code>mamba spectral_former</code></td></tr>
+        <tr><td><code>--skip-preprocessing</code></td><td>flag</td>
+            <td>off — preprocessing is skipped if flag is present</td></tr>
+      </tbody>
+    </table>
+
+    <h4><code>run-all</code> — full pipeline</h4>
+    <pre>python main.py run-all --dataset RabshiPRISMA</pre>
+    <p>Equivalent to <code>preprocess</code> followed by all four models. This is the
+       default production entry point.</p>
+
+    <h4><code>export_figures</code> — figure export module</h4>
+    <pre><span class="cmt"># Export all prediction maps as publication PNGs</span>
+python -m preprocessing.export_figures --dataset RabshiPRISMA
+
+<span class="cmt"># Options</span>
+python -m preprocessing.export_figures \
+  --dataset RabshiPRISMA \
+  --dpi 300 \
+  --bar-km 5</pre>
+
+    <table>
+      <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>--dataset</code></td><td><code>RabshiPRISMA</code></td><td>Satellite config to use</td></tr>
+        <tr><td><code>--dpi</code></td><td>300</td><td>Output resolution (dots per inch)</td></tr>
+        <tr><td><code>--bar-km</code></td><td>5</td><td>Scale bar length in kilometres</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Python API -->
+    <h2><span class="accent">◆</span> Python API</h2>
+    <p>All CLI commands are thin wrappers around importable Python classes.
+       Use the API directly in Jupyter notebooks or automated scripts.</p>
+
+    <h3>Config</h3>
+    <pre><span class="kw">from</span> projutils.config <span class="kw">import</span> Config
+
+cfg = Config(satellite_name=<span class="str">"RabshiPRISMA"</span>)
+
+<span class="cmt"># Key attributes</span>
+cfg.tifpath            <span class="cmt"># intermediate/vnir_swir_stackedd.tif</span>
+cfg.train_mask_path    <span class="cmt"># intermediate/train_mask.tif</span>
+cfg.shapefile_path     <span class="cmt"># input/PRISMA_Rabshi_dataset/Rabshi_PRISMA.shp</span>
+cfg.class_field        <span class="cmt"># 'Classvalue' for RabshiPRISMA</span>
+cfg.samples            <span class="cmt"># 1000 pixels per class</span>
+cfg.save_model_path    <span class="cmt"># output/experiments_003/saved_models/</span>
+
+<span class="cmt"># Switch satellite in-place (useful in notebooks)</span>
+cfg.reinit(<span class="str">"PRISMA"</span>)</pre>
+
+    <h3>HyperspectralPipeline</h3>
+    <pre><span class="kw">from</span> projutils.config <span class="kw">import</span> Config
+<span class="kw">from</span> src.pipeline <span class="kw">import</span> HyperspectralPipeline
+
+cfg      = Config(satellite_name=<span class="str">"RabshiPRISMA"</span>)
+pipeline = HyperspectralPipeline(cfg, verbose=<span class="kw">True</span>)
+
+<span class="cmt"># Run all four preprocessing steps</span>
+pipeline.run_preprocessing()
+
+<span class="cmt"># Get ordered list of class names for model training</span>
+all_classes = pipeline.get_class_info()
+<span class="cmt"># → ['Hornfels', 'Limestone', 'Mudstone-siltstone', ...]</span></pre>
+
+    <h3>ModelRunner</h3>
+    <pre><span class="kw">from</span> src.model_runner <span class="kw">import</span> ModelRunner, ModelType
+
+runner = ModelRunner(config=cfg, verbose=<span class="kw">True</span>)
+
+<span class="cmt"># Run a single model</span>
+runner.run_random_forests(all_classes)
+
+<span class="cmt"># Run a selection</span>
+runner.run_multiple_models(
+    [ModelType.MAMBA, ModelType.SPECTRAL_FORMER],
+    all_classes
+)
+
+<span class="cmt"># Run everything</span>
+runner.run_multiple_models(
+    [ModelType.RANDOM_FORESTS, ModelType.XGBOOST,
+     ModelType.MAMBA, ModelType.SPECTRAL_FORMER],
+    all_classes
+)</pre>
+
+    <h3>Figure Export</h3>
+    <pre><span class="kw">from</span> preprocessing.export_figures <span class="kw">import</span> export_thematic_maps_to_figures
+<span class="kw">from</span> projutils.config <span class="kw">import</span> Config
+
+cfg = Config(satellite_name=<span class="str">"RabshiPRISMA"</span>)
+
+export_thematic_maps_to_figures(
+    experiment_dir = cfg.experiment_path,
+    clr_path       = cfg.clr_path,
+    dpi            = 300,
+    bar_km         = 5.0
+)
+<span class="cmt"># Writes: experiment_path/figures/rf_prediction_map.png</span>
+<span class="cmt">#         experiment_path/figures/mamba_prediction_map.png</span>
+<span class="cmt">#         experiment_path/figures/vit_prediction_map.png</span>
+<span class="cmt">#         experiment_path/figures/xgb_prediction_map.png</span>
+<span class="cmt">#         experiment_path/figures/comparison_panel.png</span></pre>
+
+    <!-- Output files -->
+    <h2><span class="accent">◆</span> Output File Reference</h2>
+    <table>
+      <thead><tr><th>File</th><th>Location</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>vnir_swir_stackedd.tif</code></td>
+          <td><code>intermediate/</code></td>
+          <td>N-band float32 GeoTIFF, nodata=−9999</td>
+        </tr>
+        <tr>
+          <td><code>colored_class_labels.tif</code></td>
+          <td><code>intermediate/</code></td>
+          <td>Integer label raster with embedded RGB colour table</td>
+        </tr>
+        <tr>
+          <td><code>train_mask.tif</code></td>
+          <td><code>intermediate/</code></td>
+          <td>Binary mask: 1 = training pixel</td>
+        </tr>
+        <tr>
+          <td><code>test_mask.tif</code></td>
+          <td><code>intermediate/</code></td>
+          <td>Binary mask: 1 = evaluation pixel</td>
+        </tr>
+        <tr>
+          <td><code>rf_final_prediction_map.tif</code></td>
+          <td><code>output/experiments_XXX/</code></td>
+          <td>Random Forest full-scene classification</td>
+        </tr>
+        <tr>
+          <td><code>xgb_final_prediction_map.tif</code></td>
+          <td><code>output/experiments_XXX/</code></td>
+          <td>XGBoost full-scene classification</td>
+        </tr>
+        <tr>
+          <td><code>MAMBA_final_prediction_map.tif</code></td>
+          <td><code>output/experiments_XXX/</code></td>
+          <td>S²Mamba full-scene classification</td>
+        </tr>
+        <tr>
+          <td><code>VIT_final_prediction_map.tif</code></td>
+          <td><code>output/experiments_XXX/</code></td>
+          <td>SpectralFormer full-scene classification</td>
+        </tr>
+        <tr>
+          <td><code>evaluation_results.txt</code></td>
+          <td><code>saved_models/&lt;model&gt;/</code></td>
+          <td>OA, AA, Kappa, per-class accuracy</td>
+        </tr>
+        <tr>
+          <td><code>*_prediction_map.png</code></td>
+          <td><code>figures/</code></td>
+          <td>Publication-quality PNG with scale bar + legend</td>
+        </tr>
+        <tr>
+          <td><code>comparison_panel.png</code></td>
+          <td><code>figures/</code></td>
+          <td>2×2 grid of all four model maps</td>
+        </tr>
+        <tr>
+          <td><code>hyperspectral_processing.log</code></td>
+          <td>project root</td>
+          <td>Timestamped log of all pipeline steps</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Evaluation metrics -->
+    <h2><span class="accent">◆</span> Reading Evaluation Results</h2>
+    <p>Each model writes its evaluation to
+       <code>saved_models/&lt;model_name&gt;/evaluation_results.txt</code>.
+       The four metrics reported:</p>
+
+    <table>
+      <thead><tr><th>Metric</th><th>Symbol</th><th>Range</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Overall Accuracy</td><td>OA</td><td>0–1</td>
+          <td>Fraction of test pixels correctly classified</td>
+        </tr>
+        <tr>
+          <td>Average Accuracy</td><td>AA</td><td>0–1</td>
+          <td>Mean per-class accuracy (equally weights rare classes)</td>
+        </tr>
+        <tr>
+          <td>Cohen's Kappa</td><td>κ</td><td>−1–1</td>
+          <td>Agreement above chance; &gt;0.8 = strong agreement</td>
+        </tr>
+        <tr>
+          <td>Per-class accuracy</td><td>AA_i</td><td>0–1</td>
+          <td>Recall for each individual lithological class</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <pre><span class="cmt"># Benchmark results — RabshiPRISMA experiments_003</span>
+S²Mamba        OA=0.9957  AA=0.9961  Kappa=0.9951
+SpectralFormer OA=0.9819  AA=0.9831  Kappa=0.9797
+XGBoost        OA=0.9569  AA=0.9590  Kappa=0.9524
+Random Forest  OA=0.9471  AA=0.9488  Kappa=0.9419</pre>
+
+  </div><!-- /page-body -->
+</div><!-- /content -->
+</div><!-- /layout -->
+<script src="js/wiki.js"></script>
+</body>
+</html>
